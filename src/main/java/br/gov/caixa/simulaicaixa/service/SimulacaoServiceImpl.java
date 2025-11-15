@@ -5,10 +5,12 @@ import br.gov.caixa.simulaicaixa.dto.RespostaSimulacaoDto;
 import br.gov.caixa.simulaicaixa.dto.SimulacaoHistoricoDto;
 import br.gov.caixa.simulaicaixa.dto.SimulacaoPorProdutoDiaDto;
 import br.gov.caixa.simulaicaixa.dto.SolicitacaoSimulacaoDto;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import java.util.List;
 
+@ApplicationScoped
 public class SimulacaoServiceImpl implements SimulacaoService{
 
     private final SimulacaoInvestimentoRepository simulacaoInvestimentoRepository;

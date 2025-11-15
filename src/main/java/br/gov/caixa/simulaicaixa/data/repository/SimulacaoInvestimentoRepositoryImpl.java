@@ -1,11 +1,13 @@
 package br.gov.caixa.simulaicaixa.data.repository;
 
 import br.gov.caixa.simulaicaixa.domain.SimulacaoInvestimento;
+import jakarta.enterprise.context.ApplicationScoped;
 
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 
+@ApplicationScoped
 public class SimulacaoInvestimentoRepositoryImpl implements SimulacaoInvestimentoRepository {
 
     @Override
