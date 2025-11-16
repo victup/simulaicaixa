@@ -1,20 +1,31 @@
 package br.gov.caixa.simulaicaixa.data.repository;
 
+import br.gov.caixa.simulaicaixa.data.entity.PerfilRiscoEntity;
 import br.gov.caixa.simulaicaixa.domain.PerfilRisco;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+
+import static br.gov.caixa.simulaicaixa.data.mapper.PerfilRiscoMapper.mapearParaDominio;
 
 @ApplicationScoped
 public class PerfilRiscoRepositoryImpl implements PerfilRiscoRepository {
 
+    private final EntityManager entityManager;
+
+    @Inject
+    public PerfilRiscoRepositoryImpl(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
+
     @Override
     public PerfilRisco obterPorClienteId(Long clienteId) {
-        PerfilRisco perfil = new PerfilRisco();
+        PerfilRiscoEntity entity = entityManager.find(PerfilRiscoEntity.class, clienteId);
 
-        perfil.setClienteId(clienteId);
-        perfil.setPerfil("Moderado");
-        perfil.setPontuacao(65);
-        perfil.setDescricao("Perfil equilibrado entre segurança e rentabilidade.");
+        if (entity == null) {
+            return null;
+        }
 
-        return perfil;
+        return mapearParaDominio(entity);
     }
 }
