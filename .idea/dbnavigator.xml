@@ -31,10 +31,7 @@
     <last-used-providers />
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
-    <open-files>
-      <object connection-id="8f546698-2494-41b5-baba-f3bf3ab584ff" object-ref="schemas/simulaicaixa/tables/simulacao_investimento" />
-      <object connection-id="8f546698-2494-41b5-baba-f3bf3ab584ff" object-ref="schemas/simulaicaixa/tables/produto_investimento" />
-    </open-files>
+    <open-files />
   </component>
   <component name="DBNavigator.Project.DatabaseSessionManager">
     <connection id="8f546698-2494-41b5-baba-f3bf3ab584ff" />
