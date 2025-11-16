@@ -1,66 +1,66 @@
 package br.gov.caixa.simulaicaixa.data.repository;
 
+import br.gov.caixa.simulaicaixa.data.entity.ProdutoInvestimentoEntity;
 import br.gov.caixa.simulaicaixa.domain.ProdutoInvestimento;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
+import static br.gov.caixa.simulaicaixa.data.mapper.ProdutoInvestimentoMapper.mapearParaDominio;
+
 @ApplicationScoped
 public class ProdutoRepositoryImpl implements ProdutoRepository {
 
-    private final List<ProdutoInvestimento> produtos;
+    private final EntityManager entityManager;
 
-    public ProdutoRepositoryImpl() {
-        this.produtos = criarProdutosEmMemoria();
+    @Inject
+    public ProdutoRepositoryImpl(EntityManager entityManager) {
+        this.entityManager = entityManager;
     }
 
     @Override
     public List<ProdutoInvestimento> listarPorPerfil(String perfil) {
+        List<ProdutoInvestimentoEntity> entidades;
+
         if (perfil == null || perfil.isBlank()) {
-            return produtos;
+            entidades = listarTodos();
+        } else {
+            entidades = listarPorPerfilInterno(perfil);
         }
 
-        String perfilNormalizado = perfil.toUpperCase(Locale.ROOT);
-
-        return produtos.stream()
-                .filter(produto ->
-                        produto.getPerfilRecomendado() != null
-                                && produto.getPerfilRecomendado().toUpperCase(Locale.ROOT).equals(perfilNormalizado))
+        return entidades.stream()
+                .map(ProdutoRepositoryImpl::converterParaDominio)
                 .collect(Collectors.toList());
     }
 
-    private List<ProdutoInvestimento> criarProdutosEmMemoria() {
-        ProdutoInvestimento cdbConservador = new ProdutoInvestimento();
-        cdbConservador.setId(101L);
-        cdbConservador.setNome("CDB Caixa 2026");
-        cdbConservador.setTipo("CDB");
-        cdbConservador.setRentabilidade(new BigDecimal("0.12"));
-        cdbConservador.setRisco("Baixo");
-        cdbConservador.setPerfilRecomendado("CONSERVADOR");
+    private List<ProdutoInvestimentoEntity> listarTodos() {
+        String jpql = "SELECT p FROM ProdutoInvestimentoEntity p";
+        TypedQuery<ProdutoInvestimentoEntity> query =
+                entityManager.createQuery(jpql, ProdutoInvestimentoEntity.class);
 
-        ProdutoInvestimento fundoAgressivo = new ProdutoInvestimento();
-        fundoAgressivo.setId(102L);
-        fundoAgressivo.setNome("Fundo XPTO");
-        fundoAgressivo.setTipo("Fundo");
-        fundoAgressivo.setRentabilidade(new BigDecimal("0.18"));
-        fundoAgressivo.setRisco("Alto");
-        fundoAgressivo.setPerfilRecomendado("AGRESSIVO");
+        return query.getResultList();
+    }
 
-        ProdutoInvestimento cdbModerado = new ProdutoInvestimento();
-        cdbModerado.setId(103L);
-        cdbModerado.setNome("CDB Caixa Liquidez Diária");
-        cdbModerado.setTipo("CDB");
-        cdbModerado.setRentabilidade(new BigDecimal("0.10"));
-        cdbModerado.setRisco("Baixo");
-        cdbModerado.setPerfilRecomendado("MODERADO");
+    private List<ProdutoInvestimentoEntity> listarPorPerfilInterno(String perfil) {
+        String jpql = "SELECT p FROM ProdutoInvestimentoEntity p " +
+                "WHERE UPPER(p.perfilRecomendado) = :perfil";
 
-        return List.of(
-                cdbConservador,
-                fundoAgressivo,
-                cdbModerado
-        );
+        TypedQuery<ProdutoInvestimentoEntity> query =
+                entityManager.createQuery(jpql, ProdutoInvestimentoEntity.class);
+
+        String perfilNormalizado = perfil.toUpperCase(Locale.ROOT);
+
+        return query
+                .setParameter("perfil", perfilNormalizado)
+                .getResultList();
+    }
+
+    private static ProdutoInvestimento converterParaDominio(ProdutoInvestimentoEntity entity) {
+        return mapearParaDominio(entity);
     }
 }
