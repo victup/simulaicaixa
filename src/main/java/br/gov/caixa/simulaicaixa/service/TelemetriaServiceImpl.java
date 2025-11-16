@@ -1,12 +1,12 @@
 package br.gov.caixa.simulaicaixa.service;
 
-import br.gov.caixa.simulaicaixa.data.repository.TelemetriaRepository;
 import br.gov.caixa.simulaicaixa.domain.Telemetria;
 import br.gov.caixa.simulaicaixa.domain.TelemetriaPeriodo;
 import br.gov.caixa.simulaicaixa.domain.TelemetriaServico;
 import br.gov.caixa.simulaicaixa.dto.TelemetriaDto;
 import br.gov.caixa.simulaicaixa.dto.TelemetriaPeriodoDto;
 import br.gov.caixa.simulaicaixa.dto.TelemetriaServicoDto;
+import br.gov.caixa.simulaicaixa.telemetria.ColetorTelemetria;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -16,27 +16,27 @@ import java.util.stream.Collectors;
 @ApplicationScoped
 public class TelemetriaServiceImpl implements TelemetriaService {
 
-    private final TelemetriaRepository telemetriaRepository;
+    private final ColetorTelemetria coletorTelemetria;
 
     @Inject
-    public TelemetriaServiceImpl(TelemetriaRepository telemetriaRepository) {
-        this.telemetriaRepository = telemetriaRepository;
+    public TelemetriaServiceImpl(ColetorTelemetria coletorTelemetria) {
+        this.coletorTelemetria = coletorTelemetria;
     }
 
     @Override
     public TelemetriaDto obterTelemetriaGeral() {
-        Telemetria telemetria = telemetriaRepository.obterTelemetriaGeral();
+        Telemetria telemetria = coletorTelemetria.obterTelemetriaGeral();
 
         List<TelemetriaServicoDto> servicosDto = telemetria.getServicos().stream()
                 .map(this::converterParaDto)
                 .collect(Collectors.toList());
 
-        TelemetriaPeriodo periodo = telemetria.getPeriodo();
+        TelemetriaPeriodoDto periodoDto = null;
 
-        TelemetriaPeriodoDto periodoDto = new TelemetriaPeriodoDto(
-                periodo.getInicio(),
-                periodo.getFim()
-        );
+        TelemetriaPeriodo periodo = telemetria.getPeriodo();
+        if (periodo != null) {
+            periodoDto = new TelemetriaPeriodoDto(periodo.getInicio(), periodo.getFim());
+        }
 
         return new TelemetriaDto(servicosDto, periodoDto);
     }

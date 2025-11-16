@@ -15,3 +15,35 @@ VALUES (1, 123, 'CDB', 5000.00, 0.12, '2025-01-15 00:00:00.000');
 
 INSERT INTO investimento (id, cliente_id, tipo, valor, rentabilidade, data)
 VALUES (2, 123, 'Fundo Multimercado', 3000.00, 0.08, '2025-03-10 00:00:00.000');
+
+INSERT INTO telemetria_servico (
+    id,
+    nome,
+    quantidade_chamadas,
+    media_tempo_resposta_ms,
+    periodo_inicio,
+    periodo_fim
+) VALUES (
+    1,
+    'simular-investimento',
+    120,
+    250,
+    '2025-10-01 00:00:00.000',
+    '2025-10-31 00:00:00.000'
+);
+
+INSERT INTO telemetria_servico (
+    id,
+    nome,
+    quantidade_chamadas,
+    media_tempo_resposta_ms,
+    periodo_inicio,
+    periodo_fim
+) VALUES (
+    2,
+    'perfil-risco',
+    80,
+    180,
+    '2025-10-01 00:00:00.000',
+    '2025-10-31 00:00:00.000'
+);

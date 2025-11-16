@@ -5,39 +5,40 @@ import br.gov.caixa.simulaicaixa.dto.SimulacaoHistoricoDto;
 import br.gov.caixa.simulaicaixa.dto.SimulacaoPorProdutoDiaDto;
 import br.gov.caixa.simulaicaixa.dto.SolicitacaoSimulacaoDto;
 import br.gov.caixa.simulaicaixa.service.SimulacaoService;
+import br.gov.caixa.simulaicaixa.telemetria.ColetorTelemetria;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 
+import java.time.Duration;
 import java.util.List;
 
-@Path("/")
+@Path("/simular-investimento")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class SimulacaoResource {
 
     private final SimulacaoService simulacaoService;
+    private final ColetorTelemetria coletorTelemetria;
 
     @Inject
-    public SimulacaoResource(SimulacaoService simulacaoService) {
+    public SimulacaoResource(SimulacaoService simulacaoService,
+                             ColetorTelemetria coletorTelemetria) {
         this.simulacaoService = simulacaoService;
+        this.coletorTelemetria = coletorTelemetria;
     }
 
     @POST
-    @Path("/simular-investimento")
     public RespostaSimulacaoDto simularInvestimento(SolicitacaoSimulacaoDto solicitacao) {
-        return simulacaoService.simularInvestimento(solicitacao);
-    }
+        long inicio = System.nanoTime();
 
-    @GET
-    @Path("/simulacoes")
-    public List<SimulacaoHistoricoDto> listarSimulacoes() {
-        return simulacaoService.listarSimulacoes();
-    }
+        RespostaSimulacaoDto resposta = simulacaoService.simularInvestimento(solicitacao);
 
-    @GET
-    @Path("/simulacoes/por-produto-dia")
-    public List<SimulacaoPorProdutoDiaDto> listarSimulacoesPorProdutoEDia() {
-        return simulacaoService.listarSimulacoesPorProdutoEDia();
+        long fim = System.nanoTime();
+        long duracaoMs = Duration.ofNanos(fim - inicio).toMillis();
+
+        coletorTelemetria.registrarChamada("simular-investimento", duracaoMs);
+
+        return resposta;
     }
 }
