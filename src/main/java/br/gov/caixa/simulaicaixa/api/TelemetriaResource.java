@@ -4,13 +4,11 @@ import br.gov.caixa.simulaicaixa.dto.TelemetriaDto;
 import br.gov.caixa.simulaicaixa.service.TelemetriaService;
 import br.gov.caixa.simulaicaixa.telemetria.ColetorTelemetria;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 
 import java.time.Duration;
+import java.time.LocalDate;
 
 @Path("/telemetria")
 @Produces(MediaType.APPLICATION_JSON)
@@ -37,6 +35,24 @@ public class TelemetriaResource {
         long duracaoMs = Duration.ofNanos(fim - inicio).toMillis();
 
         coletorTelemetria.registrarChamada("telemetria", duracaoMs);
+
+        return telemetria;
+    }
+
+    @GET
+    @Path("/resumo")
+    public TelemetriaDto obterResumoPorPeriodo(
+            @QueryParam("inicio") LocalDate inicio,
+            @QueryParam("fim") LocalDate fim) {
+
+        long inicioNanos = System.nanoTime();
+
+        TelemetriaDto telemetria = telemetriaService.obterResumoPorPeriodo(inicio, fim);
+
+        long fimNanos = System.nanoTime();
+        long duracaoMs = Duration.ofNanos(fimNanos - inicioNanos).toMillis();
+
+        coletorTelemetria.registrarChamada("telemetria-resumo", duracaoMs);
 
         return telemetria;
     }
