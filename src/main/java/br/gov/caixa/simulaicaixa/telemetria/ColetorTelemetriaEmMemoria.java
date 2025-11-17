@@ -1,9 +1,13 @@
 package br.gov.caixa.simulaicaixa.telemetria;
 
+import br.gov.caixa.simulaicaixa.data.entity.TelemetriaRegistroEntity;
 import br.gov.caixa.simulaicaixa.domain.Telemetria;
 import br.gov.caixa.simulaicaixa.domain.TelemetriaPeriodo;
 import br.gov.caixa.simulaicaixa.domain.TelemetriaServico;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -16,7 +20,15 @@ public class ColetorTelemetriaEmMemoria implements ColetorTelemetria {
 
     private final Map<String, EstatisticaServico> estatisticasPorServico = new ConcurrentHashMap<>();
 
+    private final EntityManager entityManager;
+
+    @Inject
+    public ColetorTelemetriaEmMemoria(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
+
     @Override
+    @Transactional
     public void registrarChamada(String nomeServico, long tempoRespostaMs) {
         LocalDateTime agora = LocalDateTime.now();
 
@@ -28,6 +40,13 @@ public class ColetorTelemetriaEmMemoria implements ColetorTelemetria {
             atual.registrarChamada(tempoRespostaMs, agora);
             return atual;
         });
+
+        TelemetriaRegistroEntity registro = new TelemetriaRegistroEntity();
+        registro.setNomeServico(nomeServico);
+        registro.setTempoRespostaMs(tempoRespostaMs);
+        registro.setDataHoraChamada(agora);
+
+        entityManager.persist(registro);
     }
 
     @Override
