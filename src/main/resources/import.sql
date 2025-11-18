@@ -15,3 +15,9 @@ VALUES (1, 123, 'CDB', 5000.00, 0.12, '2025-01-15 00:00:00.000');
 
 INSERT INTO investimento (id, cliente_id, tipo, valor, rentabilidade, data)
 VALUES (2, 123, 'Fundo Multimercado', 3000.00, 0.08, '2025-03-10 00:00:00.000');
+
+INSERT INTO usuario_autenticacao (cpf, senha_hash, papel)
+VALUES ('12345678901', '$2a$10$3UNn/j3Imb8gi/CZzuMO0uJqa4i02fSKaBMkFUiQnHmU8Cql.7K1e', 'cliente');
+
+INSERT INTO usuario_autenticacao (cpf, senha_hash, papel)
+VALUES ('00000000000', '$2a$10$3UNn/j3Imb8gi/CZzuMO0uJqa4i02fSKaBMkFUiQnHmU8Cql.7K1e', 'cliente');

@@ -1,14 +1,17 @@
 package br.gov.caixa.simulaicaixa.service;
 
+import br.gov.caixa.simulaicaixa.data.entity.UsuarioAutenticacaoEntity;
+import br.gov.caixa.simulaicaixa.data.repository.UsuarioAutenticacaoRepository;
 import br.gov.caixa.simulaicaixa.dto.RequisicaoLoginDto;
 import br.gov.caixa.simulaicaixa.dto.RespostaLoginDto;
 import io.smallrye.jwt.build.Jwt;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.NotAuthorizedException;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Map;
 import java.util.Set;
 
 @ApplicationScoped
@@ -17,10 +20,12 @@ public class AutenticacaoServiceImpl implements AutenticacaoService {
     private static final String EMISSOR = "simulaicaixa";
     private static final long TEMPO_EXPIRACAO_PADRAO_SEGUNDOS = 3600L;
 
-    private final Map<String, String> credenciaisPorCpf = Map.of(
-            "12345678901", "senha123",
-            "00000000000", "senha000"
-    );
+    private final UsuarioAutenticacaoRepository usuarioAutenticacaoRepository;
+
+    @Inject
+    public AutenticacaoServiceImpl(UsuarioAutenticacaoRepository usuarioAutenticacaoRepository) {
+        this.usuarioAutenticacaoRepository = usuarioAutenticacaoRepository;
+    }
 
     @Override
     public RespostaLoginDto autenticar(RequisicaoLoginDto requisicao) {
@@ -29,19 +34,29 @@ public class AutenticacaoServiceImpl implements AutenticacaoService {
         }
 
         String cpfNormalizado = requisicao.cpf().replaceAll("\\D", "");
-        String senhaEsperada = credenciaisPorCpf.get(cpfNormalizado);
 
-        if (senhaEsperada == null || !senhaEsperada.equals(requisicao.senha())) {
+        UsuarioAutenticacaoEntity usuario =
+                usuarioAutenticacaoRepository.buscarPorCpf(cpfNormalizado);
+
+        if (usuario == null) {
+            throw new NotAuthorizedException("CPF ou senha inválidos");
+        }
+
+        boolean senhaValida = BCrypt.checkpw(requisicao.senha(), usuario.getSenhaHash());
+
+        if (!senhaValida) {
             throw new NotAuthorizedException("CPF ou senha inválidos");
         }
 
         Instant agora = Instant.now();
         Instant expiracao = agora.plusSeconds(TEMPO_EXPIRACAO_PADRAO_SEGUNDOS);
 
+        String papel = usuario.getPapel() != null ? usuario.getPapel() : "cliente";
+
         String token = Jwt.issuer(EMISSOR)
                 .subject(cpfNormalizado)
                 .claim("cpf", cpfNormalizado)
-                .groups(Set.of("cliente"))
+                .groups(Set.of(papel))
                 .expiresAt(expiracao)
                 .sign();
 
