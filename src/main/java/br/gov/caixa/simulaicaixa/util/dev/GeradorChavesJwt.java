@@ -1,4 +1,4 @@
-package br.gov.caixa.simulaicaixa.util;
+package br.gov.caixa.simulaicaixa.util.dev;
 
 import java.nio.file.Files;
 import java.nio.file.Path;

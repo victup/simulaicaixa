@@ -1,4 +1,4 @@
-package br.gov.caixa.simulaicaixa.util;
+package br.gov.caixa.simulaicaixa.util.dev;
 import org.mindrot.jbcrypt.BCrypt;
 
 public class GeradorHashSenha {
