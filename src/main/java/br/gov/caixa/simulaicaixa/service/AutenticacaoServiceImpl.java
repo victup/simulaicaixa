@@ -12,13 +12,17 @@ import org.mindrot.jbcrypt.BCrypt;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class AutenticacaoServiceImpl implements AutenticacaoService {
 
     private static final String EMISSOR = "simulaicaixa";
     private static final long TEMPO_EXPIRACAO_PADRAO_SEGUNDOS = 3600L;
+
+    private static final Set<String> GRUPOS_PERMITIDOS = Set.of("cliente", "admin");
 
     private final UsuarioAutenticacaoRepository usuarioAutenticacaoRepository;
 
@@ -48,15 +52,30 @@ public class AutenticacaoServiceImpl implements AutenticacaoService {
             throw new NotAuthorizedException("CPF ou senha inválidos");
         }
 
+        String valorGruposBd = usuario.getGrupos();
+
+        Set<String> grupos;
+        if (valorGruposBd == null || valorGruposBd.isBlank()) {
+            grupos = Set.of("cliente");
+        } else {
+            grupos = Arrays.stream(valorGruposBd.split(","))
+                    .map(String::trim)
+                    .filter(g -> !g.isEmpty())
+                    .filter(GRUPOS_PERMITIDOS::contains)
+                    .collect(Collectors.toUnmodifiableSet());
+
+            if (grupos.isEmpty()) {
+                throw new NotAuthorizedException("Usuário sem grupo de acesso válido");
+            }
+        }
+
         Instant agora = Instant.now();
         Instant expiracao = agora.plusSeconds(TEMPO_EXPIRACAO_PADRAO_SEGUNDOS);
-
-        String papel = usuario.getPapel() != null ? usuario.getPapel() : "cliente";
 
         String token = Jwt.issuer(EMISSOR)
                 .subject(cpfNormalizado)
                 .claim("cpf", cpfNormalizado)
-                .groups(Set.of(papel))
+                .groups(grupos)
                 .expiresAt(expiracao)
                 .sign();
 

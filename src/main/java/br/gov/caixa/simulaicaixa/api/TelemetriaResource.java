@@ -3,6 +3,7 @@ package br.gov.caixa.simulaicaixa.api;
 import br.gov.caixa.simulaicaixa.dto.TelemetriaDto;
 import br.gov.caixa.simulaicaixa.service.TelemetriaService;
 import br.gov.caixa.simulaicaixa.telemetria.ColetorTelemetria;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -13,6 +14,7 @@ import java.time.LocalDate;
 @Path("/telemetria")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@RolesAllowed("admin")
 public class TelemetriaResource {
 
     private final TelemetriaService telemetriaService;

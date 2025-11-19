@@ -3,6 +3,7 @@ package br.gov.caixa.simulaicaixa.api;
 import br.gov.caixa.simulaicaixa.dto.InvestimentoHistoricoDto;
 import br.gov.caixa.simulaicaixa.service.InvestimentoService;
 import br.gov.caixa.simulaicaixa.telemetria.ColetorTelemetria;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -13,6 +14,7 @@ import java.util.List;
 @Path("/investimentos")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@RolesAllowed({"cliente", "admin"})
 public class InvestimentoResource {
 
     private final InvestimentoService investimentoService;

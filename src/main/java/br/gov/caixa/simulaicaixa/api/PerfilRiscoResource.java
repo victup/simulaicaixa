@@ -3,6 +3,7 @@ package br.gov.caixa.simulaicaixa.api;
 import br.gov.caixa.simulaicaixa.dto.PerfilRiscoDto;
 import br.gov.caixa.simulaicaixa.service.PerfilRiscoService;
 import br.gov.caixa.simulaicaixa.telemetria.ColetorTelemetria;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -12,6 +13,7 @@ import java.time.Duration;
 @Path("/perfil-risco")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@RolesAllowed({"cliente", "admin"})
 public class PerfilRiscoResource {
 
     private final PerfilRiscoService perfilRiscoService;

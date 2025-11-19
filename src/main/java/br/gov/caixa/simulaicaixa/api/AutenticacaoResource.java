@@ -4,6 +4,7 @@ import br.gov.caixa.simulaicaixa.dto.RequisicaoLoginDto;
 import br.gov.caixa.simulaicaixa.dto.RespostaLoginDto;
 import br.gov.caixa.simulaicaixa.service.AutenticacaoService;
 import br.gov.caixa.simulaicaixa.telemetria.ColetorTelemetria;
+import jakarta.annotation.security.PermitAll;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
@@ -30,6 +31,7 @@ public class AutenticacaoResource {
 
     @POST
     @Path("/login")
+    @PermitAll
     public RespostaLoginDto login(RequisicaoLoginDto requisicao) {
         long inicio = System.nanoTime();
 

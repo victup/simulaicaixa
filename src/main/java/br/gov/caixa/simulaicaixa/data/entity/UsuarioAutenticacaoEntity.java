@@ -16,8 +16,8 @@ public class UsuarioAutenticacaoEntity {
     @Column(name = "senha_hash", nullable = false)
     private String senhaHash;
 
-    @Column(name = "papel", nullable = false)
-    private String papel;
+    @Column(name = "grupos", nullable = false)
+    private String grupos;
 
     public Long getId() {
         return id;
@@ -43,11 +43,11 @@ public class UsuarioAutenticacaoEntity {
         this.senhaHash = senhaHash;
     }
 
-    public String getPapel() {
-        return papel;
+    public String getGrupos() {
+        return grupos;
     }
 
-    public void setPapel(String papel) {
-        this.papel = papel;
+    public void setGrupos(String grupos) {
+        this.grupos = grupos;
     }
 }

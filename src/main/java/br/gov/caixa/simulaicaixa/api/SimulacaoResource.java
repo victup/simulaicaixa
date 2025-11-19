@@ -6,6 +6,7 @@ import br.gov.caixa.simulaicaixa.dto.SimulacaoPorProdutoDiaDto;
 import br.gov.caixa.simulaicaixa.dto.SolicitacaoSimulacaoDto;
 import br.gov.caixa.simulaicaixa.service.SimulacaoService;
 import br.gov.caixa.simulaicaixa.telemetria.ColetorTelemetria;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -16,6 +17,7 @@ import java.util.List;
 @Path("/")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@RolesAllowed({"cliente", "admin"})
 public class SimulacaoResource {
 
     private final SimulacaoService simulacaoService;
