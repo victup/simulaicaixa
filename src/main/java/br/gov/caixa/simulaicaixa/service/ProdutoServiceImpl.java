@@ -3,12 +3,12 @@ package br.gov.caixa.simulaicaixa.service;
 import br.gov.caixa.simulaicaixa.data.repository.ProdutoRepository;
 import br.gov.caixa.simulaicaixa.domain.PerfilRisco;
 import br.gov.caixa.simulaicaixa.domain.ProdutoInvestimento;
+import br.gov.caixa.simulaicaixa.domain.enums.TipoPerfilRiscoEnum;
 import br.gov.caixa.simulaicaixa.dto.ProdutoRecomendadoDto;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class ProdutoServiceImpl implements ProdutoService {
@@ -25,11 +25,15 @@ public class ProdutoServiceImpl implements ProdutoService {
 
     @Override
     public List<ProdutoRecomendadoDto> listarProdutosRecomendadosPorPerfil(String perfil) {
+        TipoPerfilRiscoEnum tipoPerfil = TipoPerfilRiscoEnum.obterPorDescricao(perfil);
+
+        Integer codigoPerfil = tipoPerfil != null ? tipoPerfil.getCodigo() : null;
+
         List<ProdutoInvestimento> produtos =
-                produtoRepository.listarPorPerfil(perfil);
+                produtoRepository.listarPorPerfil(codigoPerfil);
 
         PerfilRisco perfilRisco = new PerfilRisco();
-        perfilRisco.setPerfil(perfil);
+        perfilRisco.setTipoPerfilRisco(tipoPerfil);
 
         List<ProdutoInvestimento> produtosOrdenados =
                 motorRecomendacaoService.recomendarPorPerfil(perfilRisco, produtos);
@@ -40,8 +44,8 @@ public class ProdutoServiceImpl implements ProdutoService {
                         produto.getNome(),
                         produto.getTipo(),
                         produto.getRentabilidade(),
-                        produto.getRisco()
+                        produto.getRiscoDescricao()
                 ))
-                .collect(Collectors.toList());
+                .toList();
     }
 }

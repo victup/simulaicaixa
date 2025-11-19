@@ -2,6 +2,7 @@ package br.gov.caixa.simulaicaixa.data.mapper;
 
 import br.gov.caixa.simulaicaixa.data.entity.InvestimentoEntity;
 import br.gov.caixa.simulaicaixa.domain.Investimento;
+import br.gov.caixa.simulaicaixa.domain.enums.TipoInvestimentoEnum;
 
 public final class InvestimentoMapper {
 
@@ -13,7 +14,10 @@ public final class InvestimentoMapper {
 
         entity.setId(investimento.getId());
         entity.setClienteId(investimento.getClienteId());
-        entity.setTipo(investimento.getTipo());
+
+        TipoInvestimentoEnum tipo = investimento.getTipo();
+        entity.setTipo(tipo != null ? tipo.getCodigo() : null);
+
         entity.setValor(investimento.getValor());
         entity.setRentabilidade(investimento.getRentabilidade());
         entity.setData(investimento.getData());
@@ -26,7 +30,7 @@ public final class InvestimentoMapper {
 
         investimento.setId(entity.getId());
         investimento.setClienteId(entity.getClienteId());
-        investimento.setTipo(entity.getTipo());
+        investimento.setTipo(TipoInvestimentoEnum.obterPorCodigo(entity.getTipo()));
         investimento.setValor(entity.getValor());
         investimento.setRentabilidade(entity.getRentabilidade());
         investimento.setData(entity.getData());

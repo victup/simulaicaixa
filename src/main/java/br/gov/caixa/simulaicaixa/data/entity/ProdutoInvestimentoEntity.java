@@ -9,23 +9,22 @@ import java.math.BigDecimal;
 public class ProdutoInvestimentoEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 200)
+    @Column(nullable = false, length = 100)
     private String nome;
 
-    @Column(nullable = false, length = 50)
-    private String tipo;
+    @Column(nullable = false)
+    private Integer tipo;
 
     @Column(nullable = false, precision = 18, scale = 4)
     private BigDecimal rentabilidade;
 
-    @Column(nullable = false, length = 50)
-    private String risco;
+    @Column(nullable = false)
+    private Integer risco;
 
-    @Column(name = "perfil_recomendado", nullable = false, length = 50)
-    private String perfilRecomendado;
+    @Column(name = "perfil_recomendado", nullable = false)
+    private Integer perfilRecomendado;
 
     public Long getId() {
         return id;
@@ -43,11 +42,11 @@ public class ProdutoInvestimentoEntity {
         this.nome = nome;
     }
 
-    public String getTipo() {
+    public Integer getTipo() {
         return tipo;
     }
 
-    public void setTipo(String tipo) {
+    public void setTipo(Integer tipo) {
         this.tipo = tipo;
     }
 
@@ -59,19 +58,19 @@ public class ProdutoInvestimentoEntity {
         this.rentabilidade = rentabilidade;
     }
 
-    public String getRisco() {
+    public Integer getRisco() {
         return risco;
     }
 
-    public void setRisco(String risco) {
+    public void setRisco(Integer risco) {
         this.risco = risco;
     }
 
-    public String getPerfilRecomendado() {
+    public Integer getPerfilRecomendado() {
         return perfilRecomendado;
     }
 
-    public void setPerfilRecomendado(String perfilRecomendado) {
+    public void setPerfilRecomendado(Integer perfilRecomendado) {
         this.perfilRecomendado = perfilRecomendado;
     }
 }

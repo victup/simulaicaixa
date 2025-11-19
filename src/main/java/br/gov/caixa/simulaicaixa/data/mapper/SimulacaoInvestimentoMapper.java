@@ -14,7 +14,11 @@ public final class SimulacaoInvestimentoMapper {
         entity.setId(simulacao.getId());
         entity.setClienteId(simulacao.getClienteId());
         entity.setNomeProduto(simulacao.getNomeProduto());
-        entity.setTipoProduto(simulacao.getTipoProduto());
+        entity.setTipoProduto(
+                simulacao.getTipoProduto() != null
+                        ? simulacao.getTipoProduto().name()
+                        : null
+        );
         entity.setValorInvestido(simulacao.getValorInvestido());
         entity.setValorFinal(simulacao.getValorFinal());
         entity.setPrazoMeses(simulacao.getPrazoMeses());

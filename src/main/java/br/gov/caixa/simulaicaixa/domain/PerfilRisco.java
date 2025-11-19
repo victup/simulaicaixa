@@ -1,14 +1,13 @@
 package br.gov.caixa.simulaicaixa.domain;
 
-import br.gov.caixa.simulaicaixa.domain.enums.TipoPerfilRisco;
+import br.gov.caixa.simulaicaixa.domain.enums.TipoPerfilRiscoEnum;
 
 public class PerfilRisco {
 
     private Long clienteId;
-    private String perfil;
+    private TipoPerfilRiscoEnum tipoPerfilRisco;
     private Integer pontuacao;
     private String descricao;
-    private TipoPerfilRisco tipoPerfilRisco;
 
     public Long getClienteId() {
         return clienteId;
@@ -19,26 +18,19 @@ public class PerfilRisco {
     }
 
     public String getPerfil() {
-        return perfil;
+        return tipoPerfilRisco != null ? tipoPerfilRisco.getDescricao() : null;
     }
 
     public void setPerfil(String perfil) {
-        this.perfil = perfil;
-        this.tipoPerfilRisco = TipoPerfilRisco.fromDescricao(perfil);
+        this.tipoPerfilRisco = TipoPerfilRiscoEnum.obterPorDescricao(perfil);
     }
 
-    public TipoPerfilRisco getTipoPerfilRisco() {
-        if (tipoPerfilRisco == null) {
-            tipoPerfilRisco = TipoPerfilRisco.fromDescricao(perfil);
-        }
+    public TipoPerfilRiscoEnum getTipoPerfilRisco() {
         return tipoPerfilRisco;
     }
 
-    public void setTipoPerfilRisco(TipoPerfilRisco tipoPerfilRisco) {
+    public void setTipoPerfilRisco(TipoPerfilRiscoEnum tipoPerfilRisco) {
         this.tipoPerfilRisco = tipoPerfilRisco;
-        if (tipoPerfilRisco != null) {
-            this.perfil = tipoPerfilRisco.name();
-        }
     }
 
     public Integer getPontuacao() {

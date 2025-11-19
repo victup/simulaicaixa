@@ -26,7 +26,7 @@ public class InvestimentoServiceImpl implements InvestimentoService {
         return investimentos.stream()
                 .map(investimento -> new InvestimentoHistoricoDto(
                         investimento.getId(),
-                        investimento.getTipo(),
+                        investimento.getTipo().getDescricao(),
                         investimento.getValor(),
                         investimento.getRentabilidade(),
                         investimento.getData()

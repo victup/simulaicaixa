@@ -1,5 +1,7 @@
 package br.gov.caixa.simulaicaixa.domain;
 
+import br.gov.caixa.simulaicaixa.domain.enums.TipoInvestimentoEnum;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -7,7 +9,7 @@ public class Investimento {
 
     private Long id;
     private Long clienteId;
-    private String tipo;
+    private TipoInvestimentoEnum tipo;
     private BigDecimal valor;
     private BigDecimal rentabilidade;
     private LocalDate data;
@@ -28,12 +30,20 @@ public class Investimento {
         this.clienteId = clienteId;
     }
 
-    public String getTipo() {
+    public TipoInvestimentoEnum getTipo() {
         return tipo;
     }
 
-    public void setTipo(String tipo) {
+    public void setTipo(TipoInvestimentoEnum tipo) {
         this.tipo = tipo;
+    }
+
+    public Integer getTipoCodigo() {
+        return tipo != null ? tipo.getCodigo() : null;
+    }
+
+    public String getTipoDescricao() {
+        return tipo != null ? tipo.getDescricao() : null;
     }
 
     public BigDecimal getValor() {

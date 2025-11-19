@@ -2,6 +2,9 @@ package br.gov.caixa.simulaicaixa.data.mapper;
 
 import br.gov.caixa.simulaicaixa.data.entity.ProdutoInvestimentoEntity;
 import br.gov.caixa.simulaicaixa.domain.ProdutoInvestimento;
+import br.gov.caixa.simulaicaixa.domain.enums.NivelRiscoProdutoEnum;
+import br.gov.caixa.simulaicaixa.domain.enums.TipoInvestimentoEnum;
+import br.gov.caixa.simulaicaixa.domain.enums.TipoPerfilRiscoEnum;
 
 public final class ProdutoInvestimentoMapper {
 
@@ -13,10 +16,17 @@ public final class ProdutoInvestimentoMapper {
 
         entity.setId(produto.getId());
         entity.setNome(produto.getNome());
-        entity.setTipo(produto.getTipo());
+
+        TipoInvestimentoEnum tipoEnum = produto.getTipoEnum();
+        entity.setTipo(tipoEnum != null ? tipoEnum.getCodigo() : null);
+
         entity.setRentabilidade(produto.getRentabilidade());
-        entity.setRisco(produto.getRisco());
-        entity.setPerfilRecomendado(produto.getPerfilRecomendado());
+
+        NivelRiscoProdutoEnum riscoEnum = produto.getRisco();
+        entity.setRisco(riscoEnum != null ? riscoEnum.getCodigo() : null);
+
+        TipoPerfilRiscoEnum perfilEnum = produto.getPerfilRecomendado();
+        entity.setPerfilRecomendado(perfilEnum != null ? perfilEnum.getCodigo() : null);
 
         return entity;
     }
@@ -26,10 +36,10 @@ public final class ProdutoInvestimentoMapper {
 
         produto.setId(entity.getId());
         produto.setNome(entity.getNome());
-        produto.setTipo(entity.getTipo());
+        produto.setTipoEnum(TipoInvestimentoEnum.obterPorCodigo(entity.getTipo()));
         produto.setRentabilidade(entity.getRentabilidade());
-        produto.setRisco(entity.getRisco());
-        produto.setPerfilRecomendado(entity.getPerfilRecomendado());
+        produto.setRisco(NivelRiscoProdutoEnum.obterPorCodigo(entity.getRisco()));
+        produto.setPerfilRecomendado(TipoPerfilRiscoEnum.obterPorCodigo(entity.getPerfilRecomendado()));
 
         return produto;
     }

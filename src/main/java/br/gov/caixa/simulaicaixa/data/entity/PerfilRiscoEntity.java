@@ -13,8 +13,8 @@ public class PerfilRiscoEntity {
     @Column(name = "cliente_id")
     private Long clienteId;
 
-    @Column(nullable = false, length = 50)
-    private String perfil;
+    @Column(nullable = false)
+    private Integer perfil;
 
     @Column(nullable = false)
     private Integer pontuacao;
@@ -30,11 +30,11 @@ public class PerfilRiscoEntity {
         this.clienteId = clienteId;
     }
 
-    public String getPerfil() {
+    public Integer getPerfil() {
         return perfil;
     }
 
-    public void setPerfil(String perfil) {
+    public void setPerfil(Integer perfil) {
         this.perfil = perfil;
     }
 

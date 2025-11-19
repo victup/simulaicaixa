@@ -16,8 +16,8 @@ public class InvestimentoEntity {
     @Column(name = "cliente_id", nullable = false)
     private Long clienteId;
 
-    @Column(nullable = false, length = 100)
-    private String tipo;
+    @Column(name = "tipo", nullable = false)
+    private Integer tipo;
 
     @Column(nullable = false, precision = 18, scale = 2)
     private BigDecimal valor;
@@ -44,11 +44,11 @@ public class InvestimentoEntity {
         this.clienteId = clienteId;
     }
 
-    public String getTipo() {
+    public Integer getTipo() {
         return tipo;
     }
 
-    public void setTipo(String tipo) {
+    public void setTipo(Integer tipo) {
         this.tipo = tipo;
     }
 

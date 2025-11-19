@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface ProdutoRepository {
 
-    List<ProdutoInvestimento> listarPorPerfil(String perfil);
+    List<ProdutoInvestimento> listarPorPerfil(Integer codigoPerfil);
 }

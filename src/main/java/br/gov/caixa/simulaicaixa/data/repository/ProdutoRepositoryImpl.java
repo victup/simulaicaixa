@@ -8,8 +8,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 
 import java.util.List;
-import java.util.Locale;
-import java.util.stream.Collectors;
 
 import static br.gov.caixa.simulaicaixa.data.mapper.ProdutoInvestimentoMapper.mapearParaDominio;
 
@@ -24,10 +22,10 @@ public class ProdutoRepositoryImpl implements ProdutoRepository {
     }
 
     @Override
-    public List<ProdutoInvestimento> listarPorPerfil(String perfil) {
+    public List<ProdutoInvestimento> listarPorPerfil(Integer perfil) {
         List<ProdutoInvestimentoEntity> entidades;
 
-        if (perfil == null || perfil.isBlank()) {
+        if (perfil == null) {
             entidades = listarTodos();
         } else {
             entidades = listarPorPerfilInterno(perfil);
@@ -35,7 +33,7 @@ public class ProdutoRepositoryImpl implements ProdutoRepository {
 
         return entidades.stream()
                 .map(ProdutoRepositoryImpl::converterParaDominio)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private List<ProdutoInvestimentoEntity> listarTodos() {
@@ -46,17 +44,15 @@ public class ProdutoRepositoryImpl implements ProdutoRepository {
         return query.getResultList();
     }
 
-    private List<ProdutoInvestimentoEntity> listarPorPerfilInterno(String perfil) {
+    private List<ProdutoInvestimentoEntity> listarPorPerfilInterno(Integer perfil) {
         String jpql = "SELECT p FROM ProdutoInvestimentoEntity p " +
-                "WHERE UPPER(p.perfilRecomendado) = :perfil";
+                "WHERE p.perfilRecomendado = :perfil";
 
         TypedQuery<ProdutoInvestimentoEntity> query =
                 entityManager.createQuery(jpql, ProdutoInvestimentoEntity.class);
 
-        String perfilNormalizado = perfil.toUpperCase(Locale.ROOT);
-
         return query
-                .setParameter("perfil", perfilNormalizado)
+                .setParameter("perfil", perfil)
                 .getResultList();
     }
 

@@ -132,7 +132,7 @@ public class SimulacaoServiceImpl implements SimulacaoService {
         return new ProdutoValidadoDto(
                 simulacao.getId(),
                 simulacao.getNomeProduto(),
-                simulacao.getTipoProduto(),
+                simulacao.getTipoProduto().getDescricao(),
                 rentabilidade,
                 "Baixo"
         );
