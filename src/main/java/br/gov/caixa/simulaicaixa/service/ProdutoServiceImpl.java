@@ -1,6 +1,7 @@
 package br.gov.caixa.simulaicaixa.service;
 
 import br.gov.caixa.simulaicaixa.data.repository.ProdutoRepository;
+import br.gov.caixa.simulaicaixa.domain.PerfilRisco;
 import br.gov.caixa.simulaicaixa.domain.ProdutoInvestimento;
 import br.gov.caixa.simulaicaixa.dto.ProdutoRecomendadoDto;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -13,17 +14,27 @@ import java.util.stream.Collectors;
 public class ProdutoServiceImpl implements ProdutoService {
 
     private final ProdutoRepository produtoRepository;
+    private final MotorRecomendacaoService motorRecomendacaoService;
 
     @Inject
-    public ProdutoServiceImpl(ProdutoRepository produtoRepository) {
+    public ProdutoServiceImpl(ProdutoRepository produtoRepository,
+                              MotorRecomendacaoService motorRecomendacaoService) {
         this.produtoRepository = produtoRepository;
+        this.motorRecomendacaoService = motorRecomendacaoService;
     }
 
     @Override
     public List<ProdutoRecomendadoDto> listarProdutosRecomendadosPorPerfil(String perfil) {
-        List<ProdutoInvestimento> produtos = produtoRepository.listarPorPerfil(perfil);
+        List<ProdutoInvestimento> produtos =
+                produtoRepository.listarPorPerfil(perfil);
 
-        return produtos.stream()
+        PerfilRisco perfilRisco = new PerfilRisco();
+        perfilRisco.setPerfil(perfil);
+
+        List<ProdutoInvestimento> produtosOrdenados =
+                motorRecomendacaoService.recomendarPorPerfil(perfilRisco, produtos);
+
+        return produtosOrdenados.stream()
                 .map(produto -> new ProdutoRecomendadoDto(
                         produto.getId(),
                         produto.getNome(),
