@@ -138,4 +138,170 @@ class MotorRecomendacaoServiceTest {
 
         assertEquals(produtoRentabilidadeAlta, ordenados.getFirst());
     }
+
+    @Test
+    void deveAplicarBonusPorVolumeEmTodasAsFaixas() {
+        PerfilRisco perfilRisco = new PerfilRisco();
+        perfilRisco.setTipoPerfilRisco(TipoPerfilRiscoEnum.MODERADO);
+
+        ProdutoInvestimento produtoVolumeBaixo = new ProdutoInvestimento();
+        produtoVolumeBaixo.setPerfilRecomendado(TipoPerfilRiscoEnum.MODERADO);
+        produtoVolumeBaixo.setRisco(NivelRiscoProdutoEnum.MEDIO);
+        produtoVolumeBaixo.setRentabilidade(new BigDecimal("0.10"));
+        produtoVolumeBaixo.setTipoEnum(TipoInvestimentoEnum.CDB);
+
+        ProdutoInvestimento produtoVolumeMedio = new ProdutoInvestimento();
+        produtoVolumeMedio.setPerfilRecomendado(TipoPerfilRiscoEnum.MODERADO);
+        produtoVolumeMedio.setRisco(NivelRiscoProdutoEnum.MEDIO);
+        produtoVolumeMedio.setRentabilidade(new BigDecimal("0.10"));
+        produtoVolumeMedio.setTipoEnum(TipoInvestimentoEnum.FUNDO);
+
+        ProdutoInvestimento produtoVolumeAlto = new ProdutoInvestimento();
+        produtoVolumeAlto.setPerfilRecomendado(TipoPerfilRiscoEnum.MODERADO);
+        produtoVolumeAlto.setRisco(NivelRiscoProdutoEnum.MEDIO);
+        produtoVolumeAlto.setRentabilidade(new BigDecimal("0.10"));
+        produtoVolumeAlto.setTipoEnum(TipoInvestimentoEnum.LCI);
+
+        ProdutoInvestimento produtoVolumeMuitoAlto = new ProdutoInvestimento();
+        produtoVolumeMuitoAlto.setPerfilRecomendado(TipoPerfilRiscoEnum.MODERADO);
+        produtoVolumeMuitoAlto.setRisco(NivelRiscoProdutoEnum.MEDIO);
+        produtoVolumeMuitoAlto.setRentabilidade(new BigDecimal("0.10"));
+        produtoVolumeMuitoAlto.setTipoEnum(TipoInvestimentoEnum.LCA);
+
+        Investimento cdb1 = new Investimento();
+        cdb1.setTipo(TipoInvestimentoEnum.CDB);
+        cdb1.setValor(new BigDecimal("250"));
+        cdb1.setRentabilidade(new BigDecimal("0.10"));
+        cdb1.setData(LocalDate.now().minusDays(1));
+
+        Investimento cdb2 = new Investimento();
+        cdb2.setTipo(TipoInvestimentoEnum.CDB);
+        cdb2.setValor(new BigDecimal("250"));
+        cdb2.setRentabilidade(new BigDecimal("0.10"));
+        cdb2.setData(LocalDate.now().minusDays(1));
+
+        Investimento fundo1 = new Investimento();
+        fundo1.setTipo(TipoInvestimentoEnum.FUNDO);
+        fundo1.setValor(new BigDecimal("2500"));
+        fundo1.setRentabilidade(new BigDecimal("0.10"));
+        fundo1.setData(LocalDate.now().minusDays(1));
+
+        Investimento fundo2 = new Investimento();
+        fundo2.setTipo(TipoInvestimentoEnum.FUNDO);
+        fundo2.setValor(new BigDecimal("2500"));
+        fundo2.setRentabilidade(new BigDecimal("0.10"));
+        fundo2.setData(LocalDate.now().minusDays(1));
+
+        Investimento lci1 = new Investimento();
+        lci1.setTipo(TipoInvestimentoEnum.LCI);
+        lci1.setValor(new BigDecimal("10000"));
+        lci1.setRentabilidade(new BigDecimal("0.10"));
+        lci1.setData(LocalDate.now().minusDays(1));
+
+        Investimento lci2 = new Investimento();
+        lci2.setTipo(TipoInvestimentoEnum.LCI);
+        lci2.setValor(new BigDecimal("10000"));
+        lci2.setRentabilidade(new BigDecimal("0.10"));
+        lci2.setData(LocalDate.now().minusDays(1));
+
+        Investimento lca1 = new Investimento();
+        lca1.setTipo(TipoInvestimentoEnum.LCA);
+        lca1.setValor(new BigDecimal("30000"));
+        lca1.setRentabilidade(new BigDecimal("0.10"));
+        lca1.setData(LocalDate.now().minusDays(1));
+
+        Investimento lca2 = new Investimento();
+        lca2.setTipo(TipoInvestimentoEnum.LCA);
+        lca2.setValor(new BigDecimal("30000"));
+        lca2.setRentabilidade(new BigDecimal("0.10"));
+        lca2.setData(LocalDate.now().minusDays(1));
+
+        List<Investimento> historico = List.of(
+                cdb1, cdb2,
+                fundo1, fundo2,
+                lci1, lci2,
+                lca1, lca2
+        );
+
+        List<ProdutoInvestimento> produtos = List.of(
+                produtoVolumeBaixo,
+                produtoVolumeMedio,
+                produtoVolumeAlto,
+                produtoVolumeMuitoAlto
+        );
+
+        List<ProdutoInvestimento> ordenados =
+                motor.recomendarPorPerfilEHistorico(perfilRisco, produtos, historico);
+
+        assertEquals(produtoVolumeMuitoAlto, ordenados.getFirst());
+        assertEquals(produtoVolumeBaixo, ordenados.getLast());
+    }
+
+    @Test
+    void deveAplicarFatorPreferenciaPorLiquidezQuandoMediaRentabilidadeBaixa() {
+        PerfilRisco perfilRisco = new PerfilRisco();
+        perfilRisco.setTipoPerfilRisco(TipoPerfilRiscoEnum.CONSERVADOR);
+
+        ProdutoInvestimento produtoRentMaior = new ProdutoInvestimento();
+        produtoRentMaior.setPerfilRecomendado(TipoPerfilRiscoEnum.CONSERVADOR);
+        produtoRentMaior.setRisco(NivelRiscoProdutoEnum.BAIXO);
+        produtoRentMaior.setRentabilidade(new BigDecimal("0.12"));
+        produtoRentMaior.setTipoEnum(TipoInvestimentoEnum.CDB);
+
+        ProdutoInvestimento produtoRentMenor = new ProdutoInvestimento();
+        produtoRentMenor.setPerfilRecomendado(TipoPerfilRiscoEnum.CONSERVADOR);
+        produtoRentMenor.setRisco(NivelRiscoProdutoEnum.BAIXO);
+        produtoRentMenor.setRentabilidade(new BigDecimal("0.08"));
+        produtoRentMenor.setTipoEnum(TipoInvestimentoEnum.CDB);
+
+        Investimento inv1 = new Investimento();
+        inv1.setRentabilidade(new BigDecimal("0.05"));
+
+        Investimento inv2 = new Investimento();
+        inv2.setRentabilidade(new BigDecimal("0.06"));
+
+        List<Investimento> historico = List.of(inv1, inv2);
+        List<ProdutoInvestimento> produtos = List.of(produtoRentMenor, produtoRentMaior);
+
+        List<ProdutoInvestimento> ordenados =
+                motor.recomendarPorPerfilEHistorico(perfilRisco, produtos, historico);
+
+        assertEquals(produtoRentMaior, ordenados.getFirst());
+    }
+
+    @Test
+    void deveManterPreferenciaNeutraQuandoHistoricoNaoPossuirRentabilidade() {
+        PerfilRisco perfilRisco = new PerfilRisco();
+        perfilRisco.setTipoPerfilRisco(TipoPerfilRiscoEnum.MODERADO);
+
+        ProdutoInvestimento produtoRentMaior = new ProdutoInvestimento();
+        produtoRentMaior.setPerfilRecomendado(TipoPerfilRiscoEnum.MODERADO);
+        produtoRentMaior.setRisco(NivelRiscoProdutoEnum.MEDIO);
+        produtoRentMaior.setRentabilidade(new BigDecimal("0.15"));
+        produtoRentMaior.setTipoEnum(TipoInvestimentoEnum.CDB);
+
+        ProdutoInvestimento produtoRentMenor = new ProdutoInvestimento();
+        produtoRentMenor.setPerfilRecomendado(TipoPerfilRiscoEnum.MODERADO);
+        produtoRentMenor.setRisco(NivelRiscoProdutoEnum.MEDIO);
+        produtoRentMenor.setRentabilidade(new BigDecimal("0.10"));
+        produtoRentMenor.setTipoEnum(TipoInvestimentoEnum.CDB);
+
+        Investimento inv1 = new Investimento();
+        inv1.setRentabilidade(null);
+        inv1.setTipo(null);
+        inv1.setValor(new BigDecimal("1000"));
+
+        Investimento inv2 = new Investimento();
+        inv2.setRentabilidade(null);
+        inv2.setTipo(null);
+        inv2.setValor(new BigDecimal("2000"));
+
+        List<Investimento> historico = List.of(inv1, inv2);
+        List<ProdutoInvestimento> produtos = List.of(produtoRentMenor, produtoRentMaior);
+
+        List<ProdutoInvestimento> ordenados =
+                motor.recomendarPorPerfilEHistorico(perfilRisco, produtos, historico);
+
+        assertEquals(produtoRentMaior, ordenados.getFirst());
+    }
 }
