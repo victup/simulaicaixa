@@ -19,6 +19,21 @@ import java.util.stream.Collectors;
 @ApplicationScoped
 public class MotorRecomendacaoServiceImpl implements MotorRecomendacaoService {
 
+    private static final BigDecimal LIMITE_RENTABILIDADE_ALTA = new BigDecimal("0.20");
+    private static final BigDecimal LIMITE_RENTABILIDADE_MEDIA = new BigDecimal("0.12");
+    private static final BigDecimal LIMITE_RENTABILIDADE_BAIXA = new BigDecimal("0.08");
+
+    private static final BigDecimal LIMITE_VOLUME_BAIXO = new BigDecimal("1000");
+    private static final BigDecimal LIMITE_VOLUME_MEDIO = new BigDecimal("10000");
+    private static final BigDecimal LIMITE_VOLUME_ALTO = new BigDecimal("50000");
+
+    private static final BigDecimal LIMITE_MEDIA_RENTABILIDADE_LIQUIDEZ = new BigDecimal("0.09");
+    private static final BigDecimal LIMITE_MEDIA_RENTABILIDADE_RENTABILIDADE = new BigDecimal("0.13");
+
+    private static final double FATOR_PREFERENCIA_LIQUIDEZ = 0.8;
+    private static final double FATOR_PREFERENCIA_NEUTRO = 1.0;
+    private static final double FATOR_PREFERENCIA_RENTABILIDADE = 1.2;
+
     @Override
     public List<ProdutoInvestimento> recomendarPorPerfil(PerfilRisco perfilRisco,
                                                          List<ProdutoInvestimento> produtos) {
@@ -74,11 +89,11 @@ public class MotorRecomendacaoServiceImpl implements MotorRecomendacaoService {
             BigDecimal rent = produto.getRentabilidade();
             double scoreRentabilidade = 0.0;
 
-            if (rent.compareTo(new BigDecimal("0.20")) >= 0) {
+            if (rent.compareTo(LIMITE_RENTABILIDADE_ALTA) >= 0) {
                 scoreRentabilidade = 10.0;
-            } else if (rent.compareTo(new BigDecimal("0.12")) >= 0) {
+            } else if (rent.compareTo(LIMITE_RENTABILIDADE_MEDIA) >= 0) {
                 scoreRentabilidade = 6.0;
-            } else if (rent.compareTo(new BigDecimal("0.08")) >= 0) {
+            } else if (rent.compareTo(LIMITE_RENTABILIDADE_BAIXA) >= 0) {
                 scoreRentabilidade = 3.0;
             }
 
@@ -191,15 +206,15 @@ public class MotorRecomendacaoServiceImpl implements MotorRecomendacaoService {
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        if (total.compareTo(new BigDecimal("1000")) <= 0) {
+        if (total.compareTo(LIMITE_VOLUME_BAIXO) <= 0) {
             return 0.0;
         }
 
-        if (total.compareTo(new BigDecimal("10000")) <= 0) {
+        if (total.compareTo(LIMITE_VOLUME_MEDIO) <= 0) {
             return 2.0;
         }
 
-        if (total.compareTo(new BigDecimal("50000")) <= 0) {
+        if (total.compareTo(LIMITE_VOLUME_ALTO) <= 0) {
             return 4.0;
         }
 
@@ -247,7 +262,7 @@ public class MotorRecomendacaoServiceImpl implements MotorRecomendacaoService {
 
     private double calcularFatorPreferenciaRentabilidade(List<Investimento> historicoCliente) {
         if (historicoCliente == null || historicoCliente.isEmpty()) {
-            return 1.0;
+            return FATOR_PREFERENCIA_NEUTRO;
         }
 
         BigDecimal soma = historicoCliente.stream()
@@ -261,19 +276,19 @@ public class MotorRecomendacaoServiceImpl implements MotorRecomendacaoService {
                 .count();
 
         if (quantidade == 0) {
-            return 1.0;
+            return FATOR_PREFERENCIA_NEUTRO;
         }
 
         BigDecimal media = soma.divide(BigDecimal.valueOf(quantidade), 4, RoundingMode.HALF_UP);
 
-        if (media.compareTo(new BigDecimal("0.09")) < 0) {
-            return 0.8;
+        if (media.compareTo(LIMITE_MEDIA_RENTABILIDADE_LIQUIDEZ) < 0) {
+            return FATOR_PREFERENCIA_LIQUIDEZ;
         }
 
-        if (media.compareTo(new BigDecimal("0.13")) > 0) {
-            return 1.2;
+        if (media.compareTo(LIMITE_MEDIA_RENTABILIDADE_RENTABILIDADE) > 0) {
+            return FATOR_PREFERENCIA_RENTABILIDADE;
         }
 
-        return 1.0;
+        return FATOR_PREFERENCIA_NEUTRO;
     }
 }
