@@ -1,6 +1,9 @@
 package br.gov.caixa.simulaicaixa.api;
 
+import br.gov.caixa.simulaicaixa.core.erro.CodigoErroNegocio;
+import br.gov.caixa.simulaicaixa.core.seguranca.ValidadorAcessoCliente;
 import br.gov.caixa.simulaicaixa.dto.InvestimentoHistoricoDto;
+import br.gov.caixa.simulaicaixa.service.ContextoClienteService;
 import br.gov.caixa.simulaicaixa.service.InvestimentoService;
 import br.gov.caixa.simulaicaixa.telemetria.ColetorTelemetria;
 import jakarta.annotation.security.RolesAllowed;
@@ -19,17 +22,28 @@ public class InvestimentoResource {
 
     private final InvestimentoService investimentoService;
     private final ColetorTelemetria coletorTelemetria;
+    private final ContextoClienteService contextoClienteService;
+    private final ValidadorAcessoCliente validadorAcessoCliente;
 
     @Inject
     public InvestimentoResource(InvestimentoService investimentoService,
-                                ColetorTelemetria coletorTelemetria) {
+                                ColetorTelemetria coletorTelemetria,
+                                ContextoClienteService contextoClienteService,
+                                ValidadorAcessoCliente validadorAcessoCliente) {
         this.investimentoService = investimentoService;
         this.coletorTelemetria = coletorTelemetria;
+        this.contextoClienteService = contextoClienteService;
+        this.validadorAcessoCliente = validadorAcessoCliente;
     }
 
     @GET
     @Path("/{clienteId}")
     public List<InvestimentoHistoricoDto> listarPorCliente(@PathParam("clienteId") Long clienteId) {
+        validadorAcessoCliente.validarClienteOuAdmin(
+                clienteId,
+                CodigoErroNegocio.OPERACAO_NAO_PERMITIDA_PARA_INVESTIMENTOS
+        );
+
         long inicio = System.nanoTime();
 
         List<InvestimentoHistoricoDto> investimentos = investimentoService.listarPorClienteId(clienteId);
@@ -40,5 +54,12 @@ public class InvestimentoResource {
         coletorTelemetria.registrarChamada("investimentos-por-cliente", duracaoMs);
 
         return investimentos;
+    }
+
+    @GET
+    @Path("/usuario-logado")
+    public List<InvestimentoHistoricoDto> listarDoClienteAutenticado() {
+        Long clienteId = contextoClienteService.obterClienteIdUsuarioObrigatorio();
+        return listarPorCliente(clienteId);
     }
 }

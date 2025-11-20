@@ -44,7 +44,7 @@ public class ProdutoResource {
     }
 
     @GET
-    @Path("/cliente-atual")
+    @Path("/usuario-logado")
     @RolesAllowed({"cliente", "admin"})
     public List<ProdutoRecomendadoDto> listarParaClienteAtual() {
         return produtoService.listarProdutosRecomendadosParaClienteAtual();
