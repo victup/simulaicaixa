@@ -44,8 +44,10 @@ public enum TipoPerfilRiscoEnum {
         String normalizado = descricao.trim().toUpperCase();
 
         for (TipoPerfilRiscoEnum valor : values()) {
-            if (valor.getDescricao().toUpperCase().equals(normalizado)
-                    || valor.name().equals(normalizado)) {
+            String descEnum = valor.getDescricao().toUpperCase();
+            String nomeEnum = valor.name().toUpperCase();
+
+            if (descEnum.equals(normalizado) || nomeEnum.equals(normalizado)) {
                 return valor;
             }
         }

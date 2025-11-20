@@ -4,7 +4,10 @@ public enum TipoInvestimentoEnum {
 
     CDB(1, "CDB"),
     FUNDO(2, "Fundo"),
-    FUNDO_MULTIMERCADO(3, "Fundo Multimercado");
+    LCI(3, "LCI"),
+    LCA(4, "LCA"),
+    TESOURO(5, "Tesouro Direto"),
+    OUTRO(99, "Outro");
 
     private final Integer codigo;
     private final String descricao;
@@ -24,7 +27,7 @@ public enum TipoInvestimentoEnum {
 
     public static TipoInvestimentoEnum obterPorCodigo(Integer codigo) {
         if (codigo == null) {
-            return null;
+            return OUTRO;
         }
 
         for (TipoInvestimentoEnum valor : values()) {
@@ -33,23 +36,25 @@ public enum TipoInvestimentoEnum {
             }
         }
 
-        return null;
+        return OUTRO;
     }
 
     public static TipoInvestimentoEnum obterPorDescricao(String descricao) {
         if (descricao == null) {
-            return null;
+            return OUTRO;
         }
 
         String normalizado = descricao.trim().toUpperCase();
 
         for (TipoInvestimentoEnum valor : values()) {
-            if (valor.getDescricao().toUpperCase().equals(normalizado)
-                    || valor.name().equals(normalizado)) {
+            String descEnum = valor.getDescricao().toUpperCase();
+            String nomeEnum = valor.name().toUpperCase();
+
+            if (descEnum.equals(normalizado) || nomeEnum.equals(normalizado)) {
                 return valor;
             }
         }
 
-        return null;
+        return OUTRO;
     }
 }

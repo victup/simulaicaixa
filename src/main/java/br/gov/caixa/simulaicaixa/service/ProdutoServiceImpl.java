@@ -1,6 +1,9 @@
 package br.gov.caixa.simulaicaixa.service;
 
+import br.gov.caixa.simulaicaixa.data.repository.InvestimentoRepository;
+import br.gov.caixa.simulaicaixa.data.repository.PerfilRiscoRepository;
 import br.gov.caixa.simulaicaixa.data.repository.ProdutoRepository;
+import br.gov.caixa.simulaicaixa.domain.Investimento;
 import br.gov.caixa.simulaicaixa.domain.PerfilRisco;
 import br.gov.caixa.simulaicaixa.domain.ProdutoInvestimento;
 import br.gov.caixa.simulaicaixa.domain.enums.TipoPerfilRiscoEnum;
@@ -14,12 +17,21 @@ import java.util.List;
 public class ProdutoServiceImpl implements ProdutoService {
 
     private final ProdutoRepository produtoRepository;
+    private final InvestimentoRepository investimentoRepository;
+    private final PerfilRiscoRepository perfilRiscoRepository;
+    private final ContextoClienteService contextoClienteService;
     private final MotorRecomendacaoService motorRecomendacaoService;
 
     @Inject
     public ProdutoServiceImpl(ProdutoRepository produtoRepository,
+                              InvestimentoRepository investimentoRepository,
+                              PerfilRiscoRepository perfilRiscoRepository,
+                              ContextoClienteService contextoClienteService,
                               MotorRecomendacaoService motorRecomendacaoService) {
         this.produtoRepository = produtoRepository;
+        this.investimentoRepository = investimentoRepository;
+        this.perfilRiscoRepository = perfilRiscoRepository;
+        this.contextoClienteService = contextoClienteService;
         this.motorRecomendacaoService = motorRecomendacaoService;
     }
 
@@ -37,6 +49,41 @@ public class ProdutoServiceImpl implements ProdutoService {
 
         List<ProdutoInvestimento> produtosOrdenados =
                 motorRecomendacaoService.recomendarPorPerfil(perfilRisco, produtos);
+
+        return produtosOrdenados.stream()
+                .map(produto -> new ProdutoRecomendadoDto(
+                        produto.getId(),
+                        produto.getNome(),
+                        produto.getTipo(),
+                        produto.getRentabilidade(),
+                        produto.getRiscoDescricao()
+                ))
+                .toList();
+    }
+
+    @Override
+    public List<ProdutoRecomendadoDto> listarProdutosRecomendadosParaClienteAtual() {
+        Long clienteId = contextoClienteService.obterClienteIdUsuarioObrigatorio();
+
+        PerfilRisco perfilRisco =
+                perfilRiscoRepository.obterPorClienteId(clienteId);
+
+        List<Investimento> historico =
+                investimentoRepository.listarPorClienteId(clienteId);
+
+        Integer codigoPerfil = perfilRisco.getTipoPerfilRisco() != null
+                ? perfilRisco.getTipoPerfilRisco().getCodigo()
+                : null;
+
+        List<ProdutoInvestimento> produtosBase =
+                produtoRepository.listarPorPerfil(codigoPerfil);
+
+        List<ProdutoInvestimento> produtosOrdenados =
+                motorRecomendacaoService.recomendarPorPerfilEHistorico(
+                        perfilRisco,
+                        produtosBase,
+                        historico
+                );
 
         return produtosOrdenados.stream()
                 .map(produto -> new ProdutoRecomendadoDto(

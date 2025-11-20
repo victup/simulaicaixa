@@ -1,6 +1,6 @@
 package br.gov.caixa.simulaicaixa.domain;
 
-import br.gov.caixa.simulaicaixa.domain.enums.TipoProdutoInvestimentoEnum;
+import br.gov.caixa.simulaicaixa.domain.enums.TipoInvestimentoEnum;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -9,7 +9,7 @@ public class SimulacaoInvestimento {
     private Long id;
     private Long clienteId;
     private String nomeProduto;
-    private TipoProdutoInvestimentoEnum tipoProduto;
+    private TipoInvestimentoEnum tipoProduto;
     private BigDecimal valorInvestido;
     private BigDecimal valorFinal;
     private Integer prazoMeses;
@@ -39,12 +39,12 @@ public class SimulacaoInvestimento {
         this.nomeProduto = nomeProduto;
     }
 
-    public TipoProdutoInvestimentoEnum getTipoProduto() {
+    public TipoInvestimentoEnum getTipoProduto() {
         return tipoProduto;
     }
 
     public void setTipoProduto(String tipoProduto) {
-        this.tipoProduto = TipoProdutoInvestimentoEnum.obterPorDescricao(tipoProduto);
+        this.tipoProduto = TipoInvestimentoEnum.obterPorDescricao(tipoProduto);
     }
 
     public BigDecimal getValorInvestido() {

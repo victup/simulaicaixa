@@ -7,4 +7,6 @@ import java.util.List;
 public interface ProdutoService {
 
     List<ProdutoRecomendadoDto> listarProdutosRecomendadosPorPerfil(String perfil);
+
+    List<ProdutoRecomendadoDto> listarProdutosRecomendadosParaClienteAtual();
 }

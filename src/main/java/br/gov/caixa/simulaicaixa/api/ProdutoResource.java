@@ -42,4 +42,11 @@ public class ProdutoResource {
 
         return produtos;
     }
+
+    @GET
+    @Path("/cliente-atual")
+    @RolesAllowed({"cliente", "admin"})
+    public List<ProdutoRecomendadoDto> listarParaClienteAtual() {
+        return produtoService.listarProdutosRecomendadosParaClienteAtual();
+    }
 }

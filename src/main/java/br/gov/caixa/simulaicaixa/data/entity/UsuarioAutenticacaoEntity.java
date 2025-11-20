@@ -19,6 +19,17 @@ public class UsuarioAutenticacaoEntity {
     @Column(name = "grupos", nullable = false)
     private String grupos;
 
+    @Column(name = "cliente_id", nullable = true)
+    private Long clienteId;
+
+    public Long getClienteId() {
+        return clienteId;
+    }
+
+    public void setClienteId(Long clienteId) {
+        this.clienteId = clienteId;
+    }
+
     public Long getId() {
         return id;
     }

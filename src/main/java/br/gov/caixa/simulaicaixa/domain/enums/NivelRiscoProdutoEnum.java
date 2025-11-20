@@ -43,8 +43,10 @@ public enum NivelRiscoProdutoEnum {
         String normalizado = descricao.trim().toUpperCase();
 
         for (NivelRiscoProdutoEnum valor : values()) {
-            if (valor.getDescricao().toUpperCase().equals(normalizado)
-                    || valor.name().equals(normalizado)) {
+            String descEnum = valor.getDescricao().toUpperCase();
+            String nomeEnum = valor.name().toUpperCase();
+
+            if (descEnum.equals(normalizado) || nomeEnum.equals(normalizado)) {
                 return valor;
             }
         }
