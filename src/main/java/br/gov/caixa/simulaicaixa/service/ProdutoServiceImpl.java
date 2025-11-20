@@ -1,5 +1,7 @@
 package br.gov.caixa.simulaicaixa.service;
 
+import br.gov.caixa.simulaicaixa.core.erro.CodigoErroNegocio;
+import br.gov.caixa.simulaicaixa.core.excecao.NegocioException;
 import br.gov.caixa.simulaicaixa.data.repository.InvestimentoRepository;
 import br.gov.caixa.simulaicaixa.data.repository.PerfilRiscoRepository;
 import br.gov.caixa.simulaicaixa.data.repository.ProdutoRepository;
@@ -39,10 +41,23 @@ public class ProdutoServiceImpl implements ProdutoService {
     public List<ProdutoRecomendadoDto> listarProdutosRecomendadosPorPerfil(String perfil) {
         TipoPerfilRiscoEnum tipoPerfil = TipoPerfilRiscoEnum.obterPorDescricao(perfil);
 
-        Integer codigoPerfil = tipoPerfil != null ? tipoPerfil.getCodigo() : null;
+        if (tipoPerfil == null) {
+            throw new NegocioException(
+                    CodigoErroNegocio.PERFIL_INVALIDO,
+                    "Perfil informado \"" + perfil + "\" é inválido."
+            );
+        }
 
-        List<ProdutoInvestimento> produtos =
-                produtoRepository.listarPorPerfil(codigoPerfil);
+        Integer codigoPerfil = tipoPerfil.getCodigo();
+
+        List<ProdutoInvestimento> produtos = produtoRepository.listarPorPerfil(codigoPerfil);
+
+        if (produtos == null || produtos.isEmpty()) {
+            throw new NegocioException(
+                    CodigoErroNegocio.PRODUTOS_NAO_ENCONTRADOS_PARA_PERFIL,
+                    "Não há produtos compatíveis com o perfil " + tipoPerfil.getDescricao() + "."
+            );
+        }
 
         PerfilRisco perfilRisco = new PerfilRisco();
         perfilRisco.setTipoPerfilRisco(tipoPerfil);
@@ -65,18 +80,27 @@ public class ProdutoServiceImpl implements ProdutoService {
     public List<ProdutoRecomendadoDto> listarProdutosRecomendadosParaClienteAtual() {
         Long clienteId = contextoClienteService.obterClienteIdUsuarioObrigatorio();
 
-        PerfilRisco perfilRisco =
-                perfilRiscoRepository.obterPorClienteId(clienteId);
+        PerfilRisco perfilRisco = perfilRiscoRepository.obterPorClienteId(clienteId);
 
-        List<Investimento> historico =
-                investimentoRepository.listarPorClienteId(clienteId);
+        if (perfilRisco == null || perfilRisco.getTipoPerfilRisco() == null) {
+            throw new NegocioException(
+                    CodigoErroNegocio.CLIENTE_SEM_PERFIL_RISCO,
+                    "Cliente " + clienteId + " não possui perfil de risco cadastrado."
+            );
+        }
 
-        Integer codigoPerfil = perfilRisco.getTipoPerfilRisco() != null
-                ? perfilRisco.getTipoPerfilRisco().getCodigo()
-                : null;
+        List<Investimento> historico = investimentoRepository.listarPorClienteId(clienteId);
 
-        List<ProdutoInvestimento> produtosBase =
-                produtoRepository.listarPorPerfil(codigoPerfil);
+        Integer codigoPerfil = perfilRisco.getTipoPerfilRisco().getCodigo();
+
+        List<ProdutoInvestimento> produtosBase = produtoRepository.listarPorPerfil(codigoPerfil);
+
+        if (produtosBase == null || produtosBase.isEmpty()) {
+            throw new NegocioException(
+                    CodigoErroNegocio.PRODUTOS_NAO_ENCONTRADOS_PARA_PERFIL,
+                    "Não há produtos compatíveis com o perfil " + perfilRisco.getTipoPerfilRisco().getDescricao() + "."
+            );
+        }
 
         List<ProdutoInvestimento> produtosOrdenados =
                 motorRecomendacaoService.recomendarPorPerfilEHistorico(

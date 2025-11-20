@@ -1,7 +1,10 @@
 package br.gov.caixa.simulaicaixa.service;
 
+import br.gov.caixa.simulaicaixa.core.erro.CodigoErroNegocio;
+import br.gov.caixa.simulaicaixa.core.excecao.NegocioException;
 import br.gov.caixa.simulaicaixa.data.repository.SimulacaoInvestimentoRepository;
 import br.gov.caixa.simulaicaixa.domain.SimulacaoInvestimento;
+import br.gov.caixa.simulaicaixa.domain.enums.NivelRiscoProdutoEnum;
 import br.gov.caixa.simulaicaixa.dto.*;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -21,19 +24,27 @@ public class SimulacaoServiceImpl implements SimulacaoService {
     private static final BigDecimal RENTABILIDADE_FUNDO = new BigDecimal("0.18");
 
     private final SimulacaoInvestimentoRepository simulacaoInvestimentoRepository;
+    private final ContextoClienteService contextoClienteService;
 
     @Inject
-    public SimulacaoServiceImpl(SimulacaoInvestimentoRepository simulacaoInvestimentoRepository) {
+    public SimulacaoServiceImpl(SimulacaoInvestimentoRepository simulacaoInvestimentoRepository,
+                                ContextoClienteService contextoClienteService) {
         this.simulacaoInvestimentoRepository = simulacaoInvestimentoRepository;
+        this.contextoClienteService = contextoClienteService;
     }
 
     @Override
     public RespostaSimulacaoDto simularInvestimento(SolicitacaoSimulacaoDto solicitacao) {
+        validarSolicitacaoSimulacao(solicitacao);
+
+        Long clienteIdEfetivo = resolverClienteIdParaSimulacao(solicitacao);
+
         BigDecimal rentabilidade = obterRentabilidadeSimulada(solicitacao.tipoProduto());
         BigDecimal valorFinal = calcularValorFinal(solicitacao.valor(), rentabilidade, solicitacao.prazoMeses());
 
         SimulacaoInvestimento simulacao = criarSimulacao(
                 solicitacao,
+                clienteIdEfetivo,
                 rentabilidade,
                 valorFinal,
                 OffsetDateTime.now()
@@ -80,12 +91,55 @@ public class SimulacaoServiceImpl implements SimulacaoService {
                 .collect(Collectors.toList());
     }
 
+    private void validarSolicitacaoSimulacao(SolicitacaoSimulacaoDto solicitacao) {
+        if (solicitacao == null) {
+            throw new NegocioException(
+                    CodigoErroNegocio.SIMULACAO_DADOS_INVALIDOS,
+                    "Dados da simulação não foram informados."
+            );
+        }
+
+        BigDecimal valor = solicitacao.valor();
+        if (valor == null || valor.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new NegocioException(
+                    CodigoErroNegocio.SIMULACAO_DADOS_INVALIDOS,
+                    "Valor do investimento deve ser maior que zero."
+            );
+        }
+
+        int prazo = solicitacao.prazoMeses();
+        if (prazo <= 0) {
+            throw new NegocioException(
+                    CodigoErroNegocio.SIMULACAO_DADOS_INVALIDOS,
+                    "Prazo da simulação em meses deve ser maior que zero."
+            );
+        }
+
+        String tipoProduto = solicitacao.tipoProduto();
+        if (tipoProduto == null || tipoProduto.trim().isEmpty()) {
+            throw new NegocioException(
+                    CodigoErroNegocio.SIMULACAO_DADOS_INVALIDOS,
+                    "Tipo de produto para simulação deve ser informado."
+            );
+        }
+    }
+
+    private Long resolverClienteIdParaSimulacao(SolicitacaoSimulacaoDto solicitacao) {
+        boolean usuarioEhAdmin = contextoClienteService.usuarioAtualEhAdmin();
+
+        if (usuarioEhAdmin) {
+            return solicitacao.clienteId();
+        }
+
+        return contextoClienteService.obterClienteIdUsuarioObrigatorio();
+    }
+
     private BigDecimal obterRentabilidadeSimulada(String tipoProduto) {
         if (tipoProduto == null) {
             return RENTABILIDADE_PADRAO;
         }
 
-        String tipoNormalizado = tipoProduto.toUpperCase();
+        String tipoNormalizado = tipoProduto.trim().toUpperCase();
 
         if ("CDB".equals(tipoNormalizado)) {
             return RENTABILIDADE_CDB;
@@ -111,13 +165,14 @@ public class SimulacaoServiceImpl implements SimulacaoService {
 
     private SimulacaoInvestimento criarSimulacao(
             SolicitacaoSimulacaoDto solicitacao,
+            Long clienteIdEfetivo,
             BigDecimal rentabilidade,
             BigDecimal valorFinal,
             OffsetDateTime dataSimulacao
     ) {
         SimulacaoInvestimento simulacao = new SimulacaoInvestimento();
 
-        simulacao.setClienteId(solicitacao.clienteId());
+        simulacao.setClienteId(clienteIdEfetivo);
         simulacao.setNomeProduto("Produto " + solicitacao.tipoProduto());
         simulacao.setTipoProduto(solicitacao.tipoProduto());
         simulacao.setValorInvestido(solicitacao.valor());
@@ -134,7 +189,7 @@ public class SimulacaoServiceImpl implements SimulacaoService {
                 simulacao.getNomeProduto(),
                 simulacao.getTipoProduto().getDescricao(),
                 rentabilidade,
-                "Baixo"
+                NivelRiscoProdutoEnum.BAIXO.getDescricao()
         );
     }
 

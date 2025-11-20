@@ -1,5 +1,7 @@
 package br.gov.caixa.simulaicaixa.service;
 
+import br.gov.caixa.simulaicaixa.core.erro.CodigoErroNegocio;
+import br.gov.caixa.simulaicaixa.core.excecao.NegocioException;
 import br.gov.caixa.simulaicaixa.data.entity.UsuarioAutenticacaoEntity;
 import br.gov.caixa.simulaicaixa.data.repository.UsuarioAutenticacaoRepository;
 import br.gov.caixa.simulaicaixa.dto.RequisicaoLoginDto;
@@ -7,7 +9,6 @@ import br.gov.caixa.simulaicaixa.dto.RespostaLoginDto;
 import io.smallrye.jwt.build.Jwt;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.NotAuthorizedException;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.time.Duration;
@@ -33,8 +34,11 @@ public class AutenticacaoServiceImpl implements AutenticacaoService {
 
     @Override
     public RespostaLoginDto autenticar(RequisicaoLoginDto requisicao) {
-        if (requisicao == null || requisicao.cpf() == null || requisicao.senha() == null) {
-            throw new NotAuthorizedException("CPF ou senha inválidos");
+        if (requisicao == null
+                || requisicao.cpf() == null || requisicao.cpf().isBlank()
+                || requisicao.senha() == null || requisicao.senha().isBlank()) {
+
+            throw new NegocioException(CodigoErroNegocio.CREDENCIAIS_INVALIDAS);
         }
 
         String cpfNormalizado = requisicao.cpf().replaceAll("\\D", "");
@@ -43,13 +47,13 @@ public class AutenticacaoServiceImpl implements AutenticacaoService {
                 usuarioAutenticacaoRepository.buscarPorCpf(cpfNormalizado);
 
         if (usuario == null) {
-            throw new NotAuthorizedException("CPF ou senha inválidos");
+            throw new NegocioException(CodigoErroNegocio.CREDENCIAIS_INVALIDAS);
         }
 
         boolean senhaValida = BCrypt.checkpw(requisicao.senha(), usuario.getSenhaHash());
 
         if (!senhaValida) {
-            throw new NotAuthorizedException("CPF ou senha inválidos");
+            throw new NegocioException(CodigoErroNegocio.CREDENCIAIS_INVALIDAS);
         }
 
         String valorGruposBd = usuario.getGrupos();
@@ -65,7 +69,7 @@ public class AutenticacaoServiceImpl implements AutenticacaoService {
                     .collect(Collectors.toUnmodifiableSet());
 
             if (grupos.isEmpty()) {
-                throw new NotAuthorizedException("Usuário sem grupo de acesso válido");
+                throw new NegocioException(CodigoErroNegocio.USUARIO_SEM_GRUPO_ACESSO);
             }
         }
 

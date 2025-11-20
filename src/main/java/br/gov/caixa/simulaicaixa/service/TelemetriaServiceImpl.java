@@ -1,5 +1,7 @@
 package br.gov.caixa.simulaicaixa.service;
 
+import br.gov.caixa.simulaicaixa.core.erro.CodigoErroNegocio;
+import br.gov.caixa.simulaicaixa.core.excecao.NegocioException;
 import br.gov.caixa.simulaicaixa.data.entity.TelemetriaRegistroEntity;
 import br.gov.caixa.simulaicaixa.data.repository.TelemetriaRegistroRepository;
 import br.gov.caixa.simulaicaixa.domain.Telemetria;
@@ -54,6 +56,8 @@ public class TelemetriaServiceImpl implements TelemetriaService {
 
     @Override
     public TelemetriaDto obterResumoPorPeriodo(LocalDate inicio, LocalDate fim) {
+        validarPeriodoTelemetria(inicio, fim);
+
         LocalDate inicioEfetivo = inicio != null ? inicio : LocalDate.now().minusDays(30);
         LocalDate fimEfetivo = fim != null ? fim : LocalDate.now();
 
@@ -97,6 +101,15 @@ public class TelemetriaServiceImpl implements TelemetriaService {
         TelemetriaPeriodoDto periodo = new TelemetriaPeriodoDto(inicioEfetivo, fimEfetivo);
 
         return new TelemetriaDto(servicos, periodo);
+    }
+
+    private void validarPeriodoTelemetria(LocalDate inicio, LocalDate fim) {
+        if (inicio != null && fim != null && inicio.isAfter(fim)) {
+            throw new NegocioException(
+                    CodigoErroNegocio.TELEMETRIA_PERIODO_INVALIDO,
+                    "Data inicial do período não pode ser maior que a data final."
+            );
+        }
     }
 
     private TelemetriaServicoDto converterParaServicoDto(TelemetriaServico servico) {
