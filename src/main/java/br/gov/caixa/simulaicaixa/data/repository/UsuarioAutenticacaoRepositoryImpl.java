@@ -30,4 +30,13 @@ public class UsuarioAutenticacaoRepositoryImpl implements UsuarioAutenticacaoRep
             return null;
         }
     }
+
+    @Override
+    public UsuarioAutenticacaoEntity salvar(UsuarioAutenticacaoEntity usuario) {
+        if (usuario.getId() == null) {
+            entityManager.persist(usuario);
+            return usuario;
+        }
+        return entityManager.merge(usuario);
+    }
 }

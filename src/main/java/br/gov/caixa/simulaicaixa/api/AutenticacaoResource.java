@@ -1,11 +1,15 @@
 package br.gov.caixa.simulaicaixa.api;
 
 import br.gov.caixa.simulaicaixa.core.erro.ErroResposta;
+import br.gov.caixa.simulaicaixa.dto.RequisicaoCadastroUsuarioDto;
 import br.gov.caixa.simulaicaixa.dto.RequisicaoLoginDto;
+import br.gov.caixa.simulaicaixa.dto.RespostaCadastroUsuarioDto;
 import br.gov.caixa.simulaicaixa.dto.RespostaLoginDto;
 import br.gov.caixa.simulaicaixa.service.AutenticacaoService;
+import br.gov.caixa.simulaicaixa.service.CadastroUsuarioService;
 import br.gov.caixa.simulaicaixa.telemetria.ColetorTelemetria;
 import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
@@ -37,12 +41,15 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 public class AutenticacaoResource {
 
     private final AutenticacaoService autenticacaoService;
+    private final CadastroUsuarioService cadastroUsuarioService;
     private final ColetorTelemetria coletorTelemetria;
 
     @Inject
     public AutenticacaoResource(AutenticacaoService autenticacaoService,
+                                CadastroUsuarioService cadastroUsuarioService,
                                 ColetorTelemetria coletorTelemetria) {
         this.autenticacaoService = autenticacaoService;
+        this.cadastroUsuarioService = cadastroUsuarioService;
         this.coletorTelemetria = coletorTelemetria;
     }
 
@@ -100,6 +107,80 @@ public class AutenticacaoResource {
         long fim = System.nanoTime();
         long duracaoMs = Duration.ofNanos(fim - inicio).toMillis();
         coletorTelemetria.registrarChamada("auth-login", duracaoMs);
+
+        return resposta;
+    }
+
+    @POST
+    @Path("/usuarios/novo")
+    @RolesAllowed("admin")
+    @Operation(
+            summary = "Cadastrar novo usuário",
+            description = """
+                    Cadastra um novo usuário que poderá se autenticar na aplicação.
+
+                    • Restrito a usuários com papel 'admin'.
+                    • Útil para criar massa de teste com diferentes perfis de acesso.
+                    """
+    )
+    @APIResponses({
+            @APIResponse(
+                    responseCode = "200",
+                    description = "Usuário cadastrado com sucesso.",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON,
+                            schema = @Schema(implementation = RespostaCadastroUsuarioDto.class)
+                    )
+            ),
+            @APIResponse(
+                    responseCode = "400",
+                    description = "Dados de cadastro inválidos (por exemplo, CPF ou senha ausentes).",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON,
+                            schema = @Schema(implementation = ErroResposta.class)
+                    )
+            ),
+            @APIResponse(
+                    responseCode = "401",
+                    description = "Requisição sem autenticação válida (token ausente ou inválido).",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON,
+                            schema = @Schema(implementation = ErroResposta.class)
+                    )
+            ),
+            @APIResponse(
+                    responseCode = "403",
+                    description = "Usuário autenticado não possui permissão para cadastrar novos usuários.",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON,
+                            schema = @Schema(implementation = ErroResposta.class)
+                    )
+            ),
+            @APIResponse(
+                    responseCode = "409",
+                    description = "Já existe um usuário cadastrado para o CPF informado.",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON,
+                            schema = @Schema(implementation = ErroResposta.class)
+                    )
+            ),
+            @APIResponse(
+                    responseCode = "500",
+                    description = "Erro interno ao processar a requisição de cadastro.",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON,
+                            schema = @Schema(implementation = ErroResposta.class)
+                    )
+            )
+    })
+    public RespostaCadastroUsuarioDto cadastrarUsuario(RequisicaoCadastroUsuarioDto requisicao) {
+        long inicio = System.nanoTime();
+
+        RespostaCadastroUsuarioDto resposta = cadastroUsuarioService.cadastrarUsuario(requisicao);
+
+        long fim = System.nanoTime();
+        long duracaoMs = Duration.ofNanos(fim - inicio).toMillis();
+        coletorTelemetria.registrarChamada("auth-cadastro-usuario", duracaoMs);
 
         return resposta;
     }

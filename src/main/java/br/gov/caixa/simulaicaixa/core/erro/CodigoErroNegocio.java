@@ -25,7 +25,9 @@ public enum CodigoErroNegocio {
     CREDENCIAIS_INVALIDAS("AUTH-0001", "CPF ou senha inválidos.", 401),
     USUARIO_SEM_GRUPO_ACESSO("AUTH-0002", "Usuário sem grupo de acesso válido.", 403),
     SIMULACAO_DADOS_INVALIDOS("SIM-0001", "Parâmetros da simulação são inválidos.", 400),
-    TELEMETRIA_PERIODO_INVALIDO("TEL-0001","Período de telemetria informado é inválido.",400);
+    TELEMETRIA_PERIODO_INVALIDO("TEL-0001","Período de telemetria informado é inválido.",400),
+    USUARIO_DADOS_INVALIDOS("AUTH-0003", "Dados de cadastro de usuário inválidos.", 400),
+    USUARIO_JA_EXISTE("AUTH-0004", "Usuário com CPF informado já cadastrado.", 409);
 
     private final String codigoInterno;
     private final String mensagemPadrao;
