@@ -21,8 +21,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @QuarkusTest
 class InvestimentoResourceTest {
@@ -99,8 +98,6 @@ class InvestimentoResourceTest {
                 .body("[0].id", equalTo(1));
 
         verify(contextoClienteService).obterClienteIdUsuarioObrigatorio();
-        verify(validadorAcessoCliente)
-                .validarClienteOuAdmin(clienteId, CodigoErroNegocio.OPERACAO_NAO_PERMITIDA_PARA_INVESTIMENTOS);
-        verify(investimentoService).listarPorClienteId(clienteId);
+        verifyNoInteractions(validadorAcessoCliente);
     }
 }
