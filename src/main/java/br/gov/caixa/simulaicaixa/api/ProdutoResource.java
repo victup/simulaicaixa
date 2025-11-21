@@ -171,6 +171,16 @@ public class ProdutoResource {
             )
     })
     public List<ProdutoRecomendadoDto> listarParaClienteAtual() {
-        return produtoService.listarProdutosRecomendadosParaClienteAtual();
+        long inicio = System.nanoTime();
+
+        List<ProdutoRecomendadoDto> produtos =
+                produtoService.listarProdutosRecomendadosParaClienteAtual();
+
+        long fim = System.nanoTime();
+        long duracaoMs = Duration.ofNanos(fim - inicio).toMillis();
+
+        coletorTelemetria.registrarChamada("produtos-recomendados-usuario-logado", duracaoMs);
+
+        return produtos;
     }
 }

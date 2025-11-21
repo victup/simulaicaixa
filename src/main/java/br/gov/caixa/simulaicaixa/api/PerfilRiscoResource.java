@@ -172,6 +172,16 @@ public class PerfilRiscoResource {
     })
     public PerfilRiscoDto obterPerfilRiscoDoClienteAutenticado() {
         Long clienteId = contextoClienteService.obterClienteIdUsuarioObrigatorio();
-        return obterPerfilRisco(clienteId);
+
+        long inicio = System.nanoTime();
+
+        PerfilRiscoDto perfil = perfilRiscoService.obterPorClienteId(clienteId);
+
+        long fim = System.nanoTime();
+        long duracaoMs = Duration.ofNanos(fim - inicio).toMillis();
+
+        coletorTelemetria.registrarChamada("perfil-risco-usuario-logado", duracaoMs);
+
+        return perfil;
     }
 }

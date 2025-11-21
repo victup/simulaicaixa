@@ -190,6 +190,17 @@ public class InvestimentoResource {
     })
     public List<InvestimentoHistoricoDto> listarDoClienteAutenticado() {
         Long clienteId = contextoClienteService.obterClienteIdUsuarioObrigatorio();
-        return listarPorCliente(clienteId);
+
+        long inicio = System.nanoTime();
+
+        List<InvestimentoHistoricoDto> investimentos =
+                investimentoService.listarPorClienteId(clienteId);
+
+        long fim = System.nanoTime();
+        long duracaoMs = Duration.ofNanos(fim - inicio).toMillis();
+
+        coletorTelemetria.registrarChamada("investimentos-usuario-logado", duracaoMs);
+
+        return investimentos;
     }
 }
