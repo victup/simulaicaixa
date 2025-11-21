@@ -64,14 +64,34 @@ public class SimulacaoServiceImpl implements SimulacaoService {
 
     @Override
     public List<SimulacaoHistoricoDto> listarSimulacoes() {
-        return simulacaoInvestimentoRepository.listarTodas().stream()
+        List<SimulacaoInvestimento> simulacoes = simulacaoInvestimentoRepository.listarTodas();
+
+        if (!contextoClienteService.usuarioAtualEhAdmin()) {
+            Long clienteId = contextoClienteService.obterClienteIdUsuarioObrigatorio();
+
+            simulacoes = simulacoes.stream()
+                    .filter(s -> clienteId.equals(s.getClienteId()))
+                    .toList();
+        }
+
+        return simulacoes.stream()
                 .map(this::mapearParaHistoricoDto)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<SimulacaoPorProdutoDiaDto> listarSimulacoesPorProdutoEDia() {
-        return simulacaoInvestimentoRepository.listarTodas().stream()
+        List<SimulacaoInvestimento> base = simulacaoInvestimentoRepository.listarTodas();
+
+        if (!contextoClienteService.usuarioAtualEhAdmin()) {
+            Long clienteId = contextoClienteService.obterClienteIdUsuarioObrigatorio();
+
+            base = base.stream()
+                    .filter(s -> clienteId.equals(s.getClienteId()))
+                    .toList();
+        }
+
+        return base.stream()
                 .collect(Collectors.groupingBy(simulacao ->
                         new ChaveProdutoDia(
                                 simulacao.getNomeProduto(),

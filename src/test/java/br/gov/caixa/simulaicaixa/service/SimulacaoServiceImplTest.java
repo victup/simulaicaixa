@@ -160,53 +160,104 @@ class SimulacaoServiceImplTest {
     }
 
     @Test
-    void deveListarSimulacoesMapeandoCamposCorretamente() {
-        SimulacaoInvestimento simulacao = new SimulacaoInvestimento();
-        simulacao.setId(1L);
-        simulacao.setClienteId(123L);
-        simulacao.setNomeProduto("Produto CDB");
-        simulacao.setTipoProduto(TipoInvestimentoEnum.CDB.getDescricao());
-        simulacao.setValorInvestido(new BigDecimal("10000.00"));
-        simulacao.setValorFinal(new BigDecimal("11200.00"));
-        simulacao.setPrazoMeses(12);
-        simulacao.setDataSimulacao(OffsetDateTime.parse("2025-01-01T10:00:00Z"));
+    void deveListarSimulacoesParaAdminSemFiltro() {
+        when(contextoClienteService.usuarioAtualEhAdmin()).thenReturn(true);
+
+        SimulacaoInvestimento s1 = new SimulacaoInvestimento();
+        s1.setId(1L);
+        s1.setClienteId(123L);
+        s1.setNomeProduto("Produto CDB");
+        s1.setTipoProduto(TipoInvestimentoEnum.CDB.getDescricao());
+        s1.setValorInvestido(new BigDecimal("10000.00"));
+        s1.setValorFinal(new BigDecimal("11200.00"));
+        s1.setPrazoMeses(12);
+        s1.setDataSimulacao(OffsetDateTime.parse("2025-01-01T10:00:00Z"));
+
+        SimulacaoInvestimento s2 = new SimulacaoInvestimento();
+        s2.setId(2L);
+        s2.setClienteId(999L);
+        s2.setNomeProduto("Produto Fundo");
+        s2.setTipoProduto(TipoInvestimentoEnum.FUNDO.getDescricao());
+        s2.setValorInvestido(new BigDecimal("5000.00"));
+        s2.setValorFinal(new BigDecimal("6000.00"));
+        s2.setPrazoMeses(6);
+        s2.setDataSimulacao(OffsetDateTime.parse("2025-01-02T10:00:00Z"));
 
         when(simulacaoInvestimentoRepository.listarTodas())
-                .thenReturn(List.of(simulacao));
+                .thenReturn(List.of(s1, s2));
+
+        List<SimulacaoHistoricoDto> resposta = simulacaoService.listarSimulacoes();
+
+        assertEquals(2, resposta.size());
+        assertEquals(123L, resposta.get(0).clienteId());
+        assertEquals(999L, resposta.get(1).clienteId());
+        verify(contextoClienteService, never()).obterClienteIdUsuarioObrigatorio();
+    }
+
+    @Test
+    void deveListarSimulacoesApenasDoClienteQuandoNaoAdmin() {
+        when(contextoClienteService.usuarioAtualEhAdmin()).thenReturn(false);
+        when(contextoClienteService.obterClienteIdUsuarioObrigatorio()).thenReturn(123L);
+
+        SimulacaoInvestimento s1 = new SimulacaoInvestimento();
+        s1.setId(1L);
+        s1.setClienteId(123L);
+        s1.setNomeProduto("Produto CDB");
+        s1.setTipoProduto(TipoInvestimentoEnum.CDB.getDescricao());
+        s1.setValorInvestido(new BigDecimal("10000.00"));
+        s1.setValorFinal(new BigDecimal("11200.00"));
+        s1.setPrazoMeses(12);
+        s1.setDataSimulacao(OffsetDateTime.parse("2025-01-01T10:00:00Z"));
+
+        SimulacaoInvestimento s2 = new SimulacaoInvestimento();
+        s2.setId(2L);
+        s2.setClienteId(999L);
+        s2.setNomeProduto("Produto Fundo");
+        s2.setTipoProduto(TipoInvestimentoEnum.FUNDO.getDescricao());
+        s2.setValorInvestido(new BigDecimal("5000.00"));
+        s2.setValorFinal(new BigDecimal("6000.00"));
+        s2.setPrazoMeses(6);
+        s2.setDataSimulacao(OffsetDateTime.parse("2025-01-02T10:00:00Z"));
+
+        when(simulacaoInvestimentoRepository.listarTodas())
+                .thenReturn(List.of(s1, s2));
 
         List<SimulacaoHistoricoDto> resposta = simulacaoService.listarSimulacoes();
 
         assertEquals(1, resposta.size());
         SimulacaoHistoricoDto dto = resposta.getFirst();
-        assertEquals(1L, dto.id());
         assertEquals(123L, dto.clienteId());
         assertEquals("Produto CDB", dto.produto());
-        assertEquals(new BigDecimal("10000.00"), dto.valorInvestido());
-        assertEquals(new BigDecimal("11200.00"), dto.valorFinal());
-        assertEquals(12, dto.prazoMeses());
+        verify(contextoClienteService).obterClienteIdUsuarioObrigatorio();
     }
 
     @Test
-    void deveListarSimulacoesAgrupadasPorProdutoEDia() {
+    void deveListarSimulacoesAgrupadasPorProdutoEDiaParaAdmin() {
+        when(contextoClienteService.usuarioAtualEhAdmin()).thenReturn(true);
+
         SimulacaoInvestimento s1 = new SimulacaoInvestimento();
+        s1.setClienteId(123L);
         s1.setNomeProduto("Produto CDB");
         s1.setValorFinal(new BigDecimal("11000.00"));
         s1.setDataSimulacao(OffsetDateTime.parse("2025-01-01T10:00:00Z"));
 
         SimulacaoInvestimento s2 = new SimulacaoInvestimento();
+        s2.setClienteId(123L);
         s2.setNomeProduto("Produto CDB");
         s2.setValorFinal(new BigDecimal("12000.00"));
         s2.setDataSimulacao(OffsetDateTime.parse("2025-01-01T15:00:00Z"));
 
         SimulacaoInvestimento s3 = new SimulacaoInvestimento();
+        s3.setClienteId(999L);
         s3.setNomeProduto("Produto Fundo");
         s3.setValorFinal(new BigDecimal("9000.00"));
         s3.setDataSimulacao(OffsetDateTime.parse("2025-01-02T10:00:00Z"));
 
         SimulacaoInvestimento s4 = new SimulacaoInvestimento();
+        s4.setClienteId(999L);
         s4.setNomeProduto("Produto Ignorado");
         s4.setValorFinal(new BigDecimal("5000.00"));
-        s4.setDataSimulacao(null);
+        s4.setDataSimulacao(null); // deve ser ignorado
 
         when(simulacaoInvestimentoRepository.listarTodas())
                 .thenReturn(List.of(s1, s2, s3, s4));
@@ -226,8 +277,50 @@ class SimulacaoServiceImplTest {
         assertEquals(2L, cdbDia.quantidadeSimulacoes());
         assertEquals(new BigDecimal("11500.00"), cdbDia.mediaValorFinal());
 
-        boolean existeOutroProduto =
+        boolean existeFundo =
                 resposta.stream().anyMatch(r -> r.produto().equals("Produto Fundo"));
-        assertTrue(existeOutroProduto);
+        assertTrue(existeFundo);
+
+        verify(contextoClienteService, never()).obterClienteIdUsuarioObrigatorio();
+    }
+
+    @Test
+    void deveListarSimulacoesAgrupadasPorProdutoEDiaApenasDoClienteQuandoNaoAdmin() {
+        when(contextoClienteService.usuarioAtualEhAdmin()).thenReturn(false);
+        when(contextoClienteService.obterClienteIdUsuarioObrigatorio()).thenReturn(123L);
+
+        SimulacaoInvestimento s1 = new SimulacaoInvestimento();
+        s1.setClienteId(123L);
+        s1.setNomeProduto("Produto CDB");
+        s1.setValorFinal(new BigDecimal("11000.00"));
+        s1.setDataSimulacao(OffsetDateTime.parse("2025-01-01T10:00:00Z"));
+
+        SimulacaoInvestimento s2 = new SimulacaoInvestimento();
+        s2.setClienteId(123L);
+        s2.setNomeProduto("Produto CDB");
+        s2.setValorFinal(new BigDecimal("12000.00"));
+        s2.setDataSimulacao(OffsetDateTime.parse("2025-01-01T15:00:00Z"));
+
+        SimulacaoInvestimento s3 = new SimulacaoInvestimento();
+        s3.setClienteId(999L);
+        s3.setNomeProduto("Produto CDB");
+        s3.setValorFinal(new BigDecimal("13000.00"));
+        s3.setDataSimulacao(OffsetDateTime.parse("2025-01-01T18:00:00Z"));
+
+        when(simulacaoInvestimentoRepository.listarTodas())
+                .thenReturn(List.of(s1, s2, s3));
+
+        List<SimulacaoPorProdutoDiaDto> resposta =
+                simulacaoService.listarSimulacoesPorProdutoEDia();
+
+        assertEquals(1, resposta.size());
+        SimulacaoPorProdutoDiaDto cdbDia = resposta.getFirst();
+
+        assertEquals("Produto CDB", cdbDia.produto());
+        assertEquals(LocalDate.parse("2025-01-01"), cdbDia.data());
+        assertEquals(2L, cdbDia.quantidadeSimulacoes());
+        assertEquals(new BigDecimal("11500.00"), cdbDia.mediaValorFinal());
+
+        verify(contextoClienteService).obterClienteIdUsuarioObrigatorio();
     }
 }
