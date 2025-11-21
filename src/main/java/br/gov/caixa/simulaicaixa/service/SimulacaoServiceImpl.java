@@ -16,6 +16,18 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Serviço responsável por realizar simulações de investimento
+ * e consultar o histórico de simulações armazenadas.
+ * <p>
+ * Centraliza regras como:
+ * <ul>
+ *     <li>Validação dos dados da simulação.</li>
+ *     <li>Determinação do cliente alvo (admin ou cliente autenticado).</li>
+ *     <li>Cálculo do valor final projetado.</li>
+ *     <li>Consulta e agregação de simulações por produto e dia.</li>
+ * </ul>
+ */
 @ApplicationScoped
 public class SimulacaoServiceImpl implements SimulacaoService {
 
@@ -33,6 +45,23 @@ public class SimulacaoServiceImpl implements SimulacaoService {
         this.contextoClienteService = contextoClienteService;
     }
 
+    /**
+     * Realiza a simulação de um investimento e persiste o registro da simulação.
+     * <p>
+     * Regras principais:
+     * <ul>
+     *     <li>Valida se valor, prazo e tipo de produto são válidos.</li>
+     *     <li>Se o usuário for admin, usa o {@code clienteId} recebido na requisição.</li>
+     *     <li>Se o usuário for cliente, ignora o {@code clienteId} do payload
+     *         e utiliza sempre o cliente vinculado ao token.</li>
+     * </ul>
+     *
+     * @param solicitacao dados da simulação solicitada.
+     * @return resposta contendo o produto validado, resultado da simulação
+     *         e a data/hora de execução da simulação.
+     * @throws br.gov.caixa.simulaicaixa.core.excecao.NegocioException
+     *         quando os parâmetros da simulação são inválidos.
+     */
     @Override
     public RespostaSimulacaoDto simularInvestimento(SolicitacaoSimulacaoDto solicitacao) {
         validarSolicitacaoSimulacao(solicitacao);
@@ -62,6 +91,17 @@ public class SimulacaoServiceImpl implements SimulacaoService {
         );
     }
 
+    /**
+     * Lista o histórico de simulações de investimento conforme o perfil de acesso.
+     * <p>
+     * Regras:
+     * <ul>
+     *     <li>Usuários com papel {@code admin} visualizam simulações de todos os clientes.</li>
+     *     <li>Usuários com papel {@code cliente} visualizam apenas as próprias simulações.</li>
+     * </ul>
+     *
+     * @return lista de simulações em formato resumido.
+     */
     @Override
     public List<SimulacaoHistoricoDto> listarSimulacoes() {
         List<SimulacaoInvestimento> simulacoes = simulacaoInvestimentoRepository.listarTodas();
@@ -79,6 +119,18 @@ public class SimulacaoServiceImpl implements SimulacaoService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Lista simulações agregadas por produto e dia.
+     * <p>
+     * Para cada combinação de produto e data, são retornadas:
+     * <ul>
+     *     <li>Quantidade de simulações realizadas.</li>
+     *     <li>Média do valor final simulado.</li>
+     * </ul>
+     * O escopo dos dados segue a mesma regra de acesso de {@link #listarSimulacoes()}.
+     *
+     * @return lista agregada de simulações por produto e dia.
+     */
     @Override
     public List<SimulacaoPorProdutoDiaDto> listarSimulacoesPorProdutoEDia() {
         List<SimulacaoInvestimento> base = simulacaoInvestimentoRepository.listarTodas();

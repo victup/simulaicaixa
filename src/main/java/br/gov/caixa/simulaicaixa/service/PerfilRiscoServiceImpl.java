@@ -8,6 +8,12 @@ import br.gov.caixa.simulaicaixa.dto.PerfilRiscoDto;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+/**
+ * Serviço responsável pelo acesso ao perfil de risco dos clientes.
+ * <p>
+ * Centraliza a lógica de leitura do perfil, incluindo validações
+ * e mapeamento para o DTO exposto na camada de API.
+ */
 @ApplicationScoped
 public class PerfilRiscoServiceImpl implements PerfilRiscoService {
 
@@ -18,6 +24,15 @@ public class PerfilRiscoServiceImpl implements PerfilRiscoService {
         this.perfilRiscoRepository = perfilRiscoRepository;
     }
 
+    /**
+     * Obtém o perfil de risco de um cliente.
+     *
+     * @param clienteId identificador do cliente.
+     * @return perfil de risco do cliente.
+     * @throws br.gov.caixa.simulaicaixa.core.excecao.NegocioException
+     *         quando o cliente não possui perfil de risco cadastrado
+     *         ou os dados não estão consistentes.
+     */
     @Override
     public PerfilRiscoDto obterPorClienteId(Long clienteId) {
         PerfilRisco perfil = perfilRiscoRepository.obterPorClienteId(clienteId);

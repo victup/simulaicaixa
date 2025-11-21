@@ -23,6 +23,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Serviço responsável por consolidar e expor informações de telemetria da aplicação.
+ * <p>
+ * Utiliza registros persistidos para montar visões gerais e resumos por período
+ * sobre o desempenho dos serviços.
+ */
 @ApplicationScoped
 public class TelemetriaServiceImpl implements TelemetriaService {
 
@@ -36,6 +42,14 @@ public class TelemetriaServiceImpl implements TelemetriaService {
         this.telemetriaRegistroRepository = telemetriaRegistroRepository;
     }
 
+    /**
+     * Obtém um panorama geral da telemetria da aplicação.
+     * <p>
+     * Retorna as principais métricas consolidadas, como quantidade de chamadas
+     * por serviço e tempos médios de resposta.
+     *
+     * @return dados agregados de telemetria de todos os serviços monitorados.
+     */
     @Override
     public TelemetriaDto obterTelemetriaGeral() {
         Telemetria telemetria = coletorTelemetria.obterTelemetriaGeral();
@@ -54,6 +68,18 @@ public class TelemetriaServiceImpl implements TelemetriaService {
         return new TelemetriaDto(servicosDto, periodoDto);
     }
 
+    /**
+     * Obtém um resumo de telemetria filtrado por período.
+     * <p>
+     * Permite analisar o comportamento dos serviços entre duas datas,
+     * considerando apenas os registros dentro do intervalo informado.
+     *
+     * @param inicio data inicial (inclusive) do período analisado.
+     * @param fim    data final (inclusive) do período analisado.
+     * @return resumo de telemetria no intervalo especificado.
+     * @throws br.gov.caixa.simulaicaixa.core.excecao.NegocioException
+     *         quando o período informado é inválido (por exemplo, data final anterior à inicial).
+     */
     @Override
     public TelemetriaDto obterResumoPorPeriodo(LocalDate inicio, LocalDate fim) {
         validarPeriodoTelemetria(inicio, fim);

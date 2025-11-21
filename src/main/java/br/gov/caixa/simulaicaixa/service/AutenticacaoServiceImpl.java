@@ -17,6 +17,12 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Serviço responsável pela autenticação de usuários da aplicação.
+ * <p>
+ * Valida credenciais (CPF e senha), verifica grupos de acesso
+ * e gera o token JWT utilizado nas demais chamadas da API.
+ */
 @ApplicationScoped
 public class AutenticacaoServiceImpl implements AutenticacaoService {
 
@@ -32,6 +38,21 @@ public class AutenticacaoServiceImpl implements AutenticacaoService {
         this.usuarioAutenticacaoRepository = usuarioAutenticacaoRepository;
     }
 
+    /**
+     * Autentica um usuário a partir do CPF e senha informados na requisição.
+     * <p>
+     * Regras principais:
+     * <ul>
+     *     <li>Valida se o usuário existe e se a senha está correta.</li>
+     *     <li>Verifica se o usuário possui ao menos um grupo de acesso válido.</li>
+     *     <li>Gera e retorna um token JWT assinado para uso nas demais APIs.</li>
+     * </ul>
+     *
+     * @param requisicao dados de login (CPF e senha em texto claro).
+     * @return dados básicos do usuário autenticado e o token JWT.
+     * @throws br.gov.caixa.simulaicaixa.core.excecao.NegocioException
+     *         quando as credenciais são inválidas ou o usuário não possui grupo de acesso.
+     */
     @Override
     public RespostaLoginDto autenticar(RequisicaoLoginDto requisicao) {
         if (requisicao == null

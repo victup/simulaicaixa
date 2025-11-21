@@ -15,6 +15,12 @@ import jakarta.inject.Inject;
 
 import java.util.List;
 
+/**
+ * Serviço de recomendação e consulta de produtos de investimento.
+ * <p>
+ * Conecta o repositório de produtos ao motor de recomendação,
+ * aplicando regras de perfil de risco e histórico de investimentos do cliente.
+ */
 @ApplicationScoped
 public class ProdutoServiceImpl implements ProdutoService {
 
@@ -37,6 +43,14 @@ public class ProdutoServiceImpl implements ProdutoService {
         this.motorRecomendacaoService = motorRecomendacaoService;
     }
 
+    /**
+     * Lista produtos de investimento recomendados para um perfil informado.
+     *
+     * @param perfil descrição do perfil de risco (por exemplo, "Conservador", "Moderado", "Agressivo").
+     * @return lista de produtos recomendados ordenada por relevância.
+     * @throws br.gov.caixa.simulaicaixa.core.excecao.NegocioException
+     *         quando o perfil informado é inválido ou não há produtos compatíveis.
+     */
     @Override
     public List<ProdutoRecomendadoDto> listarProdutosRecomendadosPorPerfil(String perfil) {
         TipoPerfilRiscoEnum tipoPerfil = TipoPerfilRiscoEnum.obterPorDescricao(perfil);
@@ -76,6 +90,20 @@ public class ProdutoServiceImpl implements ProdutoService {
                 .toList();
     }
 
+    /**
+     * Lista produtos recomendados para o cliente associado ao usuário autenticado.
+     * <p>
+     * A recomendação considera:
+     * <ul>
+     *     <li>Perfil de risco do cliente.</li>
+     *     <li>Histórico de investimentos, quando disponível.</li>
+     * </ul>
+     *
+     * @return lista de produtos recomendados ordenada por relevância.
+     * @throws br.gov.caixa.simulaicaixa.core.excecao.NegocioException
+     *         quando o cliente não possui perfil de risco ou histórico suficiente
+     *         para gerar recomendações.
+     */
     @Override
     public List<ProdutoRecomendadoDto> listarProdutosRecomendadosParaClienteAtual() {
         Long clienteId = contextoClienteService.obterClienteIdUsuarioObrigatorio();

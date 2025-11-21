@@ -16,6 +16,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * Motor de recomendação responsável por calcular um score para cada produto
+ * com base no perfil de risco do cliente, características do produto e,
+ * opcionalmente, no histórico de investimentos.
+ * <p>
+ * O resultado é uma lista de produtos ordenada do mais recomendado para o menos recomendado.
+ */
 @ApplicationScoped
 public class MotorRecomendacaoServiceImpl implements MotorRecomendacaoService {
 
@@ -34,6 +41,20 @@ public class MotorRecomendacaoServiceImpl implements MotorRecomendacaoService {
     private static final double FATOR_PREFERENCIA_NEUTRO = 1.0;
     private static final double FATOR_PREFERENCIA_RENTABILIDADE = 1.2;
 
+    /**
+     * Recomenda produtos para um cliente utilizando apenas o perfil de risco informado.
+     * <p>
+     * O score de cada produto é calculado considerando:
+     * <ul>
+     *     <li>Compatibilidade entre o perfil do cliente e o perfil recomendado do produto.</li>
+     *     <li>Nível de risco do produto em relação ao perfil do cliente.</li>
+     *     <li>Faixa de rentabilidade do produto.</li>
+     * </ul>
+     *
+     * @param perfilRisco perfil de risco do cliente.
+     * @param produtos    lista de produtos candidatos à recomendação.
+     * @return lista de produtos ordenada do mais recomendado para o menos recomendado.
+     */
     @Override
     public List<ProdutoInvestimento> recomendarPorPerfil(PerfilRisco perfilRisco,
                                                          List<ProdutoInvestimento> produtos) {
@@ -44,6 +65,22 @@ public class MotorRecomendacaoServiceImpl implements MotorRecomendacaoService {
                 .toList();
     }
 
+    /**
+     * Recomenda produtos considerando o perfil de risco e o histórico de investimentos do cliente.
+     * <p>
+     * Além dos fatores de perfil e risco, o score leva em conta:
+     * <ul>
+     *     <li>Preferência histórica por tipos de investimento.</li>
+     *     <li>Volume já investido por tipo de produto.</li>
+     *     <li>Frequência de investimentos ao longo do tempo.</li>
+     *     <li>Média de rentabilidade dos investimentos anteriores.</li>
+     * </ul>
+     *
+     * @param perfilRisco       perfil de risco do cliente.
+     * @param produtos          lista de produtos candidatos à recomendação.
+     * @param historicoCliente  histórico de investimentos do cliente (pode ser vazio).
+     * @return lista de produtos ordenada do mais recomendado para o menos recomendado.
+     */
     @Override
     public List<ProdutoInvestimento> recomendarPorPerfilEHistorico(PerfilRisco perfilRisco,
                                                                    List<ProdutoInvestimento> produtos,
@@ -55,6 +92,15 @@ public class MotorRecomendacaoServiceImpl implements MotorRecomendacaoService {
                 .toList();
     }
 
+    /**
+     * Calcula o score numérico de um produto para um determinado cliente,
+     * combinando perfil de risco, risco do produto, rentabilidade e histórico.
+     *
+     * @param produto          produto avaliado.
+     * @param perfilRisco      perfil de risco do cliente (pode ser nulo).
+     * @param historicoCliente histórico de investimentos (pode ser nulo ou vazio).
+     * @return score calculado; quanto maior, mais recomendado.
+     */
     private double calcularScoreProduto(ProdutoInvestimento produto,
                                         PerfilRisco perfilRisco,
                                         List<Investimento> historicoCliente) {

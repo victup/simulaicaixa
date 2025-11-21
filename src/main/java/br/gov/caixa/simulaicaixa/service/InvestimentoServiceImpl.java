@@ -11,6 +11,12 @@ import jakarta.inject.Inject;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Serviço de consulta de investimentos.
+ * <p>
+ * Responsável por buscar o histórico de investimentos de um cliente
+ * e expor os dados em formato adequado para a camada de API.
+ */
 @ApplicationScoped
 public class InvestimentoServiceImpl implements InvestimentoService {
 
@@ -21,6 +27,14 @@ public class InvestimentoServiceImpl implements InvestimentoService {
         this.investimentoRepository = investimentoRepository;
     }
 
+    /**
+     * Lista o histórico de investimentos de um cliente.
+     *
+     * @param clienteId identificador do cliente.
+     * @return lista de investimentos do cliente em ordem cronológica.
+     * @throws br.gov.caixa.simulaicaixa.core.excecao.NegocioException
+     *         quando o cliente não é encontrado ou não possui histórico suficiente.
+     */
     @Override
     public List<InvestimentoHistoricoDto> listarPorClienteId(Long clienteId) {
         List<Investimento> investimentos = investimentoRepository.listarPorClienteId(clienteId);
