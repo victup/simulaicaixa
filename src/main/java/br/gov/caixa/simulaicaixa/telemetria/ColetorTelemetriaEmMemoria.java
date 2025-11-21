@@ -14,6 +14,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Implementação em memória do {@link ColetorTelemetria}.
+ * <p>
+ * Mantém estatísticas agregadas de tempo de resposta por serviço em memória
+ * e persiste cada chamada de forma individual no banco de dados para
+ * consultas históricas de telemetria.
+ * </p>
+ */
 @ApplicationScoped
 public class ColetorTelemetriaEmMemoria implements ColetorTelemetria {
 
@@ -26,6 +34,17 @@ public class ColetorTelemetriaEmMemoria implements ColetorTelemetria {
         this.telemetriaRegistroRepository = telemetriaRegistroRepository;
     }
 
+    /**
+     * Registra uma chamada de serviço na telemetria.
+     * <p>
+     * Atualiza as estatísticas em memória do serviço informado (quantidade de
+     * chamadas, soma de tempos e intervalo entre primeira e última chamada) e
+     * grava um registro persistente via {@link TelemetriaRegistroRepository}.
+     * </p>
+     *
+     * @param nomeServico    identificador lógico do serviço (por exemplo, nome do endpoint)
+     * @param tempoRespostaMs tempo de resposta da chamada em milissegundos
+     */
     @Override
     public void registrarChamada(String nomeServico, long tempoRespostaMs) {
         LocalDateTime agora = LocalDateTime.now();
@@ -47,6 +66,18 @@ public class ColetorTelemetriaEmMemoria implements ColetorTelemetria {
         telemetriaRegistroRepository.salvar(registro);
     }
 
+    /**
+     * Obtém um snapshot da telemetria agregada da aplicação.
+     * <p>
+     * A consolidação é feita apenas com base no estado em memória:
+     * para cada serviço são retornadas quantidade de chamadas e
+     * média de tempo de resposta, além do período entre a primeira
+     * e a última chamada registradas em qualquer serviço.
+     * </p>
+     *
+     * @return objeto {@link Telemetria} com métricas agregadas por serviço
+     * e período total observado
+     */
     @Override
     public Telemetria obterTelemetriaGeral() {
         Telemetria telemetria = new Telemetria();
@@ -91,6 +122,10 @@ public class ColetorTelemetriaEmMemoria implements ColetorTelemetria {
         return telemetria;
     }
 
+    /**
+     * Estrutura interna de apoio para consolidação das estatísticas
+     * de telemetria por serviço.
+     */
     private static final class EstatisticaServico {
 
         private long quantidadeChamadas;
@@ -98,6 +133,12 @@ public class ColetorTelemetriaEmMemoria implements ColetorTelemetria {
         private LocalDateTime primeiraChamada;
         private LocalDateTime ultimaChamada;
 
+        /**
+         * Atualiza as métricas internas com uma nova chamada registrada.
+         *
+         * @param tempoRespostaMs tempo de resposta da chamada em milissegundos
+         * @param momento         instante em que a chamada foi registrada
+         */
         synchronized void registrarChamada(long tempoRespostaMs, LocalDateTime momento) {
             quantidadeChamadas++;
             somaTempoRespostaMs += tempoRespostaMs;
@@ -115,6 +156,12 @@ public class ColetorTelemetriaEmMemoria implements ColetorTelemetria {
             return quantidadeChamadas;
         }
 
+        /**
+         * Calcula a média de tempo de resposta baseada em todas
+         * as chamadas registradas para o serviço.
+         *
+         * @return média em milissegundos, ou {@code 0} se não houver chamadas
+         */
         long calcularMediaTempoRespostaMs() {
             if (quantidadeChamadas == 0) {
                 return 0L;

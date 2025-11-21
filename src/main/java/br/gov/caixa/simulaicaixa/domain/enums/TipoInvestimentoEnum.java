@@ -1,5 +1,11 @@
 package br.gov.caixa.simulaicaixa.domain.enums;
 
+/**
+ * Tipos de produtos de investimento suportados pelo sistema.
+ * <p>
+ * Cada tipo possui um código inteiro (usado na persistência) e uma
+ * descrição utilizada em telas e respostas da API.
+ */
 public enum TipoInvestimentoEnum {
 
     CDB(1, "CDB"),
@@ -17,14 +23,33 @@ public enum TipoInvestimentoEnum {
         this.descricao = descricao;
     }
 
+    /**
+     * Retorna o código numérico do tipo de investimento.
+     *
+     * @return código inteiro usado para persistência.
+     */
     public Integer getCodigo() {
         return codigo;
     }
 
+    /**
+     * Retorna a descrição legível do tipo de investimento.
+     *
+     * @return descrição amigável para exibição e respostas da API.
+     */
     public String getDescricao() {
         return descricao;
     }
 
+    /**
+     * Obtém o tipo de investimento a partir do código numérico.
+     * <p>
+     * Caso o código seja {@code null} ou não corresponda a nenhum valor
+     * conhecido, retorna {@link #OUTRO}.
+     *
+     * @param codigo código inteiro do tipo de investimento.
+     * @return enum correspondente ou {@link #OUTRO} se não houver correspondência.
+     */
     public static TipoInvestimentoEnum obterPorCodigo(Integer codigo) {
         if (codigo == null) {
             return OUTRO;
@@ -39,6 +64,15 @@ public enum TipoInvestimentoEnum {
         return OUTRO;
     }
 
+    /**
+     * Obtém o tipo de investimento a partir do nome ou descrição.
+     * <p>
+     * Ignora diferenças de caixa e espaços em branco. Se não houver
+     * correspondência, retorna {@link #OUTRO}.
+     *
+     * @param descricao texto contendo o nome do enum ou a descrição.
+     * @return enum correspondente ou {@link #OUTRO} se não houver correspondência.
+     */
     public static TipoInvestimentoEnum obterPorDescricao(String descricao) {
         if (descricao == null) {
             return OUTRO;
