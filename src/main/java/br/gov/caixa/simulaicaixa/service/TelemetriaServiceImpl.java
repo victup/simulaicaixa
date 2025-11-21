@@ -17,8 +17,7 @@ import jakarta.inject.Inject;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -87,8 +86,8 @@ public class TelemetriaServiceImpl implements TelemetriaService {
         LocalDate inicioEfetivo = inicio != null ? inicio : LocalDate.now().minusDays(30);
         LocalDate fimEfetivo = fim != null ? fim : LocalDate.now();
 
-        OffsetDateTime inicioDataHora = inicioEfetivo.atStartOfDay().atOffset(ZoneOffset.UTC);
-        OffsetDateTime fimDataHora = fimEfetivo.plusDays(1).atStartOfDay().minusNanos(1).atOffset(ZoneOffset.UTC);
+        LocalDateTime inicioDataHora = inicioEfetivo.atStartOfDay();
+        LocalDateTime fimDataHora = fimEfetivo.plusDays(1).atStartOfDay().minusNanos(1);
 
         List<TelemetriaRegistroEntity> registros =
                 telemetriaRegistroRepository.listarPorPeriodo(inicioDataHora, fimDataHora);

@@ -14,7 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -137,7 +137,7 @@ class TelemetriaServiceImplTest {
         when(r3.getNomeServico()).thenReturn("listar-simulacoes");
         when(r3.getTempoRespostaMs()).thenReturn(50L);
 
-        when(telemetriaRegistroRepository.listarPorPeriodo(any(OffsetDateTime.class), any(OffsetDateTime.class)))
+        when(telemetriaRegistroRepository.listarPorPeriodo(any(LocalDateTime.class), any(LocalDateTime.class)))
                 .thenReturn(List.of(r1, r2, r3));
 
         LocalDate inicio = LocalDate.of(2025, 1, 1);
@@ -161,13 +161,13 @@ class TelemetriaServiceImplTest {
         assertEquals(2L, segundo.quantidadeChamadas());
         assertEquals(150L, segundo.mediaTempoRespostaMs());
 
-        verify(telemetriaRegistroRepository).listarPorPeriodo(any(OffsetDateTime.class), any(OffsetDateTime.class));
+        verify(telemetriaRegistroRepository).listarPorPeriodo(any(LocalDateTime.class), any(LocalDateTime.class));
         verifyNoInteractions(coletorTelemetria);
     }
 
     @Test
     void deveObterResumoPorPeriodoComListaVazia() {
-        when(telemetriaRegistroRepository.listarPorPeriodo(any(OffsetDateTime.class), any(OffsetDateTime.class)))
+        when(telemetriaRegistroRepository.listarPorPeriodo(any(LocalDateTime.class), any(LocalDateTime.class)))
                 .thenReturn(List.of());
 
         LocalDate inicio = LocalDate.of(2025, 1, 1);
@@ -179,7 +179,7 @@ class TelemetriaServiceImplTest {
         assertNotNull(dto.periodo());
         assertTrue(dto.servicos().isEmpty());
 
-        verify(telemetriaRegistroRepository).listarPorPeriodo(any(OffsetDateTime.class), any(OffsetDateTime.class));
+        verify(telemetriaRegistroRepository).listarPorPeriodo(any(LocalDateTime.class), any(LocalDateTime.class));
         verifyNoInteractions(coletorTelemetria);
     }
 }
