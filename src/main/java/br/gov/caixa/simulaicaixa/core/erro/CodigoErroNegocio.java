@@ -1,5 +1,18 @@
 package br.gov.caixa.simulaicaixa.core.erro;
 
+/**
+ * Enum que centraliza os códigos de erro de negócio da aplicação.
+ * <p>
+ * Cada constante define:
+ * <ul>
+ *   <li>Um código interno (por exemplo, {@code CLI-0001}),</li>
+ *   <li>Uma mensagem padrão amigável,</li>
+ *   <li>O status HTTP a ser utilizado na resposta.</li>
+ * </ul>
+ * <p>
+ * Esses valores são utilizados principalmente por {@link br.gov.caixa.simulaicaixa.core.excecao.NegocioException}
+ * e pelos mapeadores de exceção REST para compor o corpo padronizado de erro.
+ */
 public enum CodigoErroNegocio {
 
     CLIENTE_NAO_ENCONTRADO("CLI-0001", "Cliente não encontrado.", 404),
@@ -24,14 +37,28 @@ public enum CodigoErroNegocio {
         this.statusHttp = statusHttp;
     }
 
+    /**
+     * Retorna o código interno que identifica o erro de negócio
+     * (por exemplo, {@code CLI-0001}, {@code AUTH-0001}).
+     */
     public String getCodigoInterno() {
         return codigoInterno;
     }
 
+    /**
+     * Retorna a mensagem padrão associada ao erro de negócio.
+     * <p>
+     * Essa mensagem é normalmente utilizada como mensagem principal
+     * em {@link br.gov.caixa.simulaicaixa.core.excecao.NegocioException}.
+     */
     public String getMensagemPadrao() {
         return mensagemPadrao;
     }
 
+    /**
+     * Retorna o status HTTP sugerido para ser utilizado na resposta
+     * quando este erro de negócio ocorre.
+     */
     public int getStatusHttp() {
         return statusHttp;
     }
